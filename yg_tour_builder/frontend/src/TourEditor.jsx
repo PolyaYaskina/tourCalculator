@@ -1,67 +1,94 @@
 import { useState, useEffect } from "react";
 import { SERVICE_OPTIONS, DESCRIPTION_TEMPLATES } from "./data/constants";
-import { RULES } from "./data/rules";                       // 📘 Логика расчёта количества и составных услуг
-import { PRICE_SUMMER, PRICE_WINTER } from "./data/yg_prices.js"
+import { CALCULATORS } from "./data/calculator";
 
-// 🧱 Шаблон дня по умолчанию: пустое описание + одна базовая услуга
 const initialDay = () => ({ description: "", services: ["#трансфер"] });
 
 export default function TourEditor() {
-  const [days, setDays] = useState([{ ...initialDay() }]); // 📅 Массив дней тура
-  const [numPeople, setNumPeople] = useState(1);           // 👥 Количество участников
-  const [season, setSeason] = useState("winter");          // ☃️ Выбор сезона
-  const [result, setResult] = useState("");                // 📝 Сгенерированный Markdown
-  const [table, setTable] = useState([]);                  // 📊 Смета
+  const [days, setDays] = useState([{ ...initialDay() }]);
+  const [numPeople, setNumPeople] = useState(1);
+  const [season, setSeason] = useState("winter");
+  const [result, setResult] = useState("");
+  const [table, setTable] = useState([]);
 
-  // 🧾 Определяем, какой прайс-лист использовать по сезону
-  const currentPriceList = season === "winter" ? PRICE_WINTER : PRICE_SUMMER;
-
-  // ➕ Добавление нового дня в маршрут
   const handleAddDay = () => setDays([...days, initialDay()]);
 
-  // ✍️ Изменение текстового описания дня
   const handleDescriptionChange = (dayIndex, value) => {
     const updated = [...days];
     updated[dayIndex].description = value;
     setDays(updated);
   };
 
-  // 🛎 Изменение выбранной услуги
+  const handleRemoveService = (dayIndex, serviceIndex) => {
+    const updated = [...days];
+    updated[dayIndex].services.splice(serviceIndex, 1);
+    setDays(updated);
+  };
   const handleServiceChange = (dayIndex, serviceIndex, value) => {
     const updated = [...days];
     updated[dayIndex].services[serviceIndex] = value;
+
+    const option = SERVICE_OPTIONS.find((o) => o.key === value);
+    if (option?.description && !updated[dayIndex].description.includes(option.description)) {
+      updated[dayIndex].description += `\n${option.description}`;
+    }
+
     setDays(updated);
   };
 
-  // ➕ Добавление новой строки услуги в день
   const handleAddService = (dayIndex) => {
     const updated = [...days];
     updated[dayIndex].services.push("");
     setDays(updated);
   };
 
-  // ⌨️ Вставка шаблона описания (можно вставлять несколько)
   const handleTemplateInsert = (dayIndex, templateText) => {
     const updated = [...days];
     const current = updated[dayIndex].description.trim();
-    updated[dayIndex].description = current
-      ? current + "\n" + templateText
-      : templateText;
+    updated[dayIndex].description = current ? current + "\n" + templateText : templateText;
     setDays(updated);
   };
 
-  // 📦 Получение информации об услуге: название, цена, количество, пометки
-  const getServiceInfo = (svcLabel) => {
-    const cleanLabel = svcLabel.replace("#", "").replace("_", " ").trim();
-    const rule = RULES[cleanLabel]; // 🔎 Находим правило расчёта
-    const key = rule?.key || cleanLabel;
-    const price = currentPriceList[key] || 10000; // 💸 Цена по прайсу или заглушка
-    const qty = rule?.calc ? rule.calc(numPeople) : numPeople;
-    const note = rule?.note || null;
-    return { label: cleanLabel, price, qty, note };
+  const getServiceInfo = (svcKey) => {
+    const option = SERVICE_OPTIONS.find((o) => o.key === svcKey);
+    if (!option) return [];
+
+    const getPrice = (item) => (season === "winter" ? item.winterPrice : item.summerPrice);
+    const getQty = (item) => {
+      const fn = CALCULATORS[item.calc] || (() => 1);
+      return fn(numPeople);
+    };
+
+    if (option.composite && Array.isArray(option.components)) {
+      return option.components.map((comp) => {
+        const qty = getQty(comp);
+        const price = getPrice(comp);
+        const sum = price * qty;
+        return {
+          label: comp.label || comp.key,
+          price,
+          qty,
+          sum,
+          sumWithNDS: Math.round(sum * 1.06),
+          note: option.label
+        };
+      });
+    }
+
+    const qty = getQty(option);
+    const price = getPrice(option);
+    const sum = price * qty;
+    return [
+      {
+        label: option.label,
+        price,
+        qty,
+        sum,
+        sumWithNDS: Math.round(sum * 1.06)
+      }
+    ];
   };
 
-  // 📊 Подсчёт таблицы сметы по всем дням и услугам
   const calculateTable = () => {
     const newTable = [];
     let total = 0;
@@ -72,30 +99,26 @@ export default function TourEditor() {
       const filtered = day.services.filter((s) => s.trim());
 
       filtered.forEach((svc) => {
-        const { label, price, qty, note } = getServiceInfo(svc);
-        const sum = price * qty;
-        const sumWithNDS = Math.round(sum * 1.06);
-
-        total += sum;
-        totalWithNDS += sumWithNDS;
-
-        newTable.push({
-          day: dayNum,
-          label: note ? `${label} (${note})` : label,
-          price,
-          qty,
-          sum,
-          sumWithNDS
+        const rows = getServiceInfo(svc);
+        rows.forEach(({ label, price, qty, sum, sumWithNDS, note }) => {
+          newTable.push({
+            day: dayNum,
+            label: note ? `${label} (${note})` : label,
+            price,
+            qty,
+            sum,
+            sumWithNDS
+          });
+          total += sum;
+          totalWithNDS += sumWithNDS;
         });
       });
     });
 
-    // 🔚 Добавление строки с итогами
     newTable.push({ label: "ИТОГО", sum: total, sumWithNDS: totalWithNDS });
     return newTable;
   };
 
-  // 🧾 Генерация Markdown + таблицы сметы
   const handleGenerate = async () => {
     const payload = {};
     days.forEach((day, i) => {
@@ -103,7 +126,7 @@ export default function TourEditor() {
       const filtered = day.services.filter((s) => s.trim());
       payload[dayNum] = {
         description: day.description.trim(),
-        services: filtered,
+        services: filtered
       };
     });
 
@@ -111,7 +134,7 @@ export default function TourEditor() {
       const res = await fetch("http://localhost:8000/generate/markdown", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -123,17 +146,14 @@ export default function TourEditor() {
     }
   };
 
-  // ⏱️ Автоматический пересчёт при изменении дней, людей или сезона
   useEffect(() => {
     setTable(calculateTable());
   }, [numPeople, days, season]);
 
-  // 📜 Интерфейс
   return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-center">🛠️ Конструктор тура</h1>
 
-      {/* 🎛️ Блок управления количеством людей и сезоном */}
       <div className="flex items-center gap-6">
         <label className="text-sm font-medium">Количество человек:</label>
         <input
@@ -154,12 +174,9 @@ export default function TourEditor() {
         </select>
       </div>
 
-      {/* 🔄 Список дней с описаниями и услугами */}
       {days.map((day, dayIndex) => (
         <div key={dayIndex} className="border p-4 rounded bg-white shadow space-y-4">
           <h2 className="text-lg font-semibold">День {dayIndex + 1}</h2>
-
-          {/* 🖋️ Текстовое описание дня */}
           <textarea
             className="w-full p-3 border rounded text-sm"
             rows={3}
@@ -167,8 +184,6 @@ export default function TourEditor() {
             value={day.description}
             onChange={(e) => handleDescriptionChange(dayIndex, e.target.value)}
           />
-
-          {/* 🧩 Шаблоны описания */}
           <div className="flex flex-wrap gap-2 text-sm">
             {DESCRIPTION_TEMPLATES.map((tpl, i) => (
               <button
@@ -180,25 +195,29 @@ export default function TourEditor() {
               </button>
             ))}
           </div>
-
-          {/* 📋 Услуги */}
           {day.services.map((svc, svcIndex) => (
-            <select
-              key={svcIndex}
-              className="w-full p-2 border rounded bg-white text-sm"
-              value={svc}
-              onChange={(e) => handleServiceChange(dayIndex, svcIndex, e.target.value)}
-            >
-              <option value="">Выберите услугу</option>
-              {SERVICE_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          ))}
-
-          {/* ➕ Кнопка добавить услугу */}
+  <div key={svcIndex} className="flex items-center gap-2">
+    <select
+      className="w-full p-2 border rounded bg-white text-sm"
+      value={svc}
+      onChange={(e) => handleServiceChange(dayIndex, svcIndex, e.target.value)}
+    >
+      <option value="">Выберите услугу</option>
+      {SERVICE_OPTIONS.map((opt) => (
+        <option key={opt.key} value={opt.key}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+    <button
+      className="text-red-500 hover:text-red-700 text-lg font-bold"
+      onClick={() => handleRemoveService(dayIndex, svcIndex)}
+      title="Удалить услугу"
+    >
+      ×
+    </button>
+  </div>
+))}
           <button
             className="bg-gray-200 text-sm px-2 py-1 rounded hover:bg-gray-300"
             onClick={() => handleAddService(dayIndex)}
@@ -208,7 +227,6 @@ export default function TourEditor() {
         </div>
       ))}
 
-      {/* 🔘 Кнопки: добавить день, сгенерировать результат */}
       <div className="flex flex-wrap gap-4">
         <button
           className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
@@ -224,7 +242,6 @@ export default function TourEditor() {
         </button>
       </div>
 
-      {/* 📄 Markdown-вывод */}
       {result && (
         <div className="mt-6 bg-gray-100 p-4 rounded border whitespace-pre-wrap">
           <h2 className="text-lg font-semibold mb-2">📄 Markdown:</h2>
@@ -232,7 +249,6 @@ export default function TourEditor() {
         </div>
       )}
 
-      {/* 📊 Смета */}
       {table.length > 0 && (
         <div className="mt-6 bg-white p-4 rounded border shadow">
           <h2 className="text-lg font-semibold mb-4">📊 Смета</h2>
