@@ -1,5 +1,6 @@
 
 
+/*
 export default function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -9,21 +10,20 @@ export default function App() {
     </div>
   );
 }
+ */
 
-/*
+
 
 import TourEditor from "./TourEditor";
 export default function App() {
   return (
     <div className="p-8 max-w-3xl mx-auto">
-      { */
-/* Проверка Tailwind *//*
+      {
+
 }
-      <div className="bg-red-500 text-white p-4 rounded mb-4">
-        ✅ Tailwind работает, если ты видишь красный фон
-      </div>
+
 
       <TourEditor />
     </div>
   );
-} */
+}
