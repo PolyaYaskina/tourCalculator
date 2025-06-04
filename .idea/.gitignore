@@ -1,5 +1,10 @@
-# Default ignored files
-/shelf/
-/workspace.xml
+# Python venv
+.venv/
+backend/venv/
+
+# macOS system files
+.DS_Store
+
+# Node
 node_modules/
-venv
+dist/
