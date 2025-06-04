@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Dict, Any, List
-from pathlib import Path
 from io import BytesIO
 
 from docx import Document
