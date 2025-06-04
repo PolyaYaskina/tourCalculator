@@ -1,5 +1,3 @@
-
-
 import TourEditor from "./TourEditor";
 
 export default function App() {
