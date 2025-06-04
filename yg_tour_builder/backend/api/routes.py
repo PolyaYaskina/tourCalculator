@@ -1,4 +1,9 @@
-from fastapi import APIRouter, Request
+from __future__ import annotations
+
+from fastapi import APIRouter, Request, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
+
+from engine import parser, calculator, generator
 
 router = APIRouter()
 
@@ -18,3 +23,36 @@ async def generate_markdown(request: Request):
         result.append("")  # пустая строка = перенос
 
     return {"markdown": "\n".join(result)}
+
+
+@router.post("/itinerary/upload")
+async def upload_itinerary(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith(".docx"):
+        raise HTTPException(status_code=400, detail="Only .docx files are supported")
+    contents = await file.read()
+    tmp_path = "/tmp/uploaded.docx"
+    with open(tmp_path, "wb") as f:
+        f.write(contents)
+    days = parser.parse_word(tmp_path)
+    return {"days": days}
+
+
+@router.post("/estimate")
+async def generate_estimate(request: Request):
+    days = await request.json()
+    estimate = calculator.calculate_costs(days)
+    return estimate
+
+
+@router.post("/download/word")
+async def download_word(request: Request):
+    days = await request.json()
+    content = generator.create_word(days)
+    return StreamingResponse(iter([content]), media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers={"Content-Disposition": "attachment; filename=itinerary.docx"})
+
+
+@router.post("/download/excel")
+async def download_excel(request: Request):
+    detail = await request.json()
+    content = generator.create_excel(detail)
+    return StreamingResponse(iter([content]), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=estimate.xlsx"})
