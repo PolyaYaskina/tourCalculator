@@ -53,6 +53,7 @@ async def download_word(request: Request):
 
 @router.post("/download/excel")
 async def download_excel(request: Request):
-    detail = await request.json()
-    content = generator.create_excel(detail)
+    days = await request.json()
+    estimate = calculator.calculate_costs(days)
+    content = generator.create_excel(estimate["detail"])
     return StreamingResponse(iter([content]), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=estimate.xlsx"})

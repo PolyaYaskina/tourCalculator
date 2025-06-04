@@ -68,7 +68,7 @@ export default function TourEditor() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/estimate", {
+      const res = await fetch("/estimate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -93,7 +93,7 @@ export default function TourEditor() {
     });
 
     try {
-      const res = await fetch("http://localhost:8000/generate/markdown", {
+      const res = await fetch("/generate/markdown", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -105,6 +105,70 @@ export default function TourEditor() {
     } catch (error) {
       console.error("Ошибка запроса:", error);
       setResult("Ошибка генерации или подключения к серверу");
+    }
+  };
+
+  const handleDownloadWord = async () => {
+    const payload = {};
+    days.forEach((day, i) => {
+      const dayNum = i + 1;
+      const filtered = day.services.filter((s) => s.trim());
+      payload[dayNum] = {
+        description: day.description.trim(),
+        services: filtered,
+      };
+    });
+    try {
+      const res = await fetch("/download/word", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        },
+        body: JSON.stringify(payload),
+      });
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "itinerary.docx";
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Ошибка скачивания Word:", err);
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    const payload = {};
+    days.forEach((day, i) => {
+      const dayNum = i + 1;
+      const filtered = day.services.filter((s) => s.trim());
+      payload[dayNum] = {
+        description: day.description.trim(),
+        services: filtered,
+      };
+    });
+    try {
+      const res = await fetch("/download/excel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+        body: JSON.stringify(payload),
+      });
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "estimate.xlsx";
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Ошибка скачивания Excel:", err);
     }
   };
 
@@ -206,6 +270,18 @@ export default function TourEditor() {
           onClick={handleGenerate}
         >
           📥 Сгенерировать Markdown и смету
+        </button>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={handleDownloadExcel}
+        >
+          💾 Скачать смету (Excel)
+        </button>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={handleDownloadWord}
+        >
+          💾 Скачать маршрут (Word)
         </button>
       </div>
 
