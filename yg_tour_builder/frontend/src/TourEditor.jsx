@@ -68,7 +68,7 @@ export default function TourEditor() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/estimate", {
+      const res = await fetch("/estimate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -93,7 +93,7 @@ export default function TourEditor() {
     });
 
     try {
-      const res = await fetch("http://localhost:8000/generate/markdown", {
+      const res = await fetch("/generate/markdown", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -119,7 +119,7 @@ export default function TourEditor() {
       };
     });
     try {
-      const res = await fetch("http://localhost:8000/download/word", {
+      const res = await fetch("/download/word", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -141,15 +141,24 @@ export default function TourEditor() {
   };
 
   const handleDownloadExcel = async () => {
+    const payload = {};
+    days.forEach((day, i) => {
+      const dayNum = i + 1;
+      const filtered = day.services.filter((s) => s.trim());
+      payload[dayNum] = {
+        description: day.description.trim(),
+        services: filtered,
+      };
+    });
     try {
-      const res = await fetch("http://localhost:8000/download/excel", {
+      const res = await fetch("/download/excel", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept:
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         },
-        body: JSON.stringify(detail),
+        body: JSON.stringify(payload),
       });
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
