@@ -20,4 +20,3 @@ Install Node.js dependencies and launch the development server.
 cd yg_tour_builder/frontend
 npm install
 npm run dev
-сodex/remove-terminal-prompts-and-clean-files
