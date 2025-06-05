@@ -1,4 +1,3 @@
-
 export const CALCULATORS = {
   always_1: (p) => 1,
   per_person: (p) => p,
