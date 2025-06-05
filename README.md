@@ -44,4 +44,3 @@ cd yg_tour_builder/frontend
 >>>>>>> 1791818c27c0910805d28c3854c9bf8d5c53ec2e
 npm install
 npm run dev
-сodex/remove-terminal-prompts-and-clean-files
