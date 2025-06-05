@@ -24,6 +24,7 @@ export default function TourEditor() {
     updated[dayIndex].services.splice(serviceIndex, 1);
     setDays(updated);
   };
+
   const handleServiceChange = (dayIndex, serviceIndex, value) => {
     const updated = [...days];
     updated[dayIndex].services[serviceIndex] = value;
@@ -48,6 +49,54 @@ export default function TourEditor() {
     updated[dayIndex].description = current ? current + "\n" + templateText : templateText;
     setDays(updated);
   };
+
+   const handleDownloadExcel = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/generate/excel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            numPeople,
+            season,
+            days
+          })
+        });
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "smeta.xlsx");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } catch (err) {
+        console.error("Ошибка загрузки Excel:", err);
+      }
+    };
+
+   const handleDownloadWord = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/generate/word", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            numPeople,
+            season,
+            days
+          })
+        });
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "route.docx");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } catch (err) {
+        console.error("Ошибка загрузки Word:", err);
+      }
+    };
 
   const getServiceInfo = (svcKey) => {
     const option = SERVICE_OPTIONS.find((o) => o.key === svcKey);
@@ -227,20 +276,35 @@ export default function TourEditor() {
         </div>
       ))}
 
-      <div className="flex flex-wrap gap-4">
-        <button
-          className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-          onClick={handleAddDay}
-        >
-          ➕ Добавить день
-        </button>
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          onClick={handleGenerate}
-        >
-          📥 Сгенерировать Markdown и смету
-        </button>
-      </div>
+        <div className="flex flex-wrap gap-4">
+          <button
+            className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+            onClick={handleAddDay}
+          >
+            ➕ Добавить день
+          </button>
+
+          <button
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            onClick={handleGenerate}
+          >
+            📥 Сгенерировать Markdown и смету
+          </button>
+
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={handleDownloadExcel}
+          >
+            💾 Скачать смету (Excel)
+          </button>
+
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={handleDownloadWord}
+          >
+            💾 Скачать маршрут (Word)
+          </button>
+        </div>
 
       {result && (
         <div className="mt-6 bg-gray-100 p-4 rounded border whitespace-pre-wrap">
