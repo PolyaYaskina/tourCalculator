@@ -1,9 +1,67 @@
 import { useState, useEffect } from "react";
-import { SERVICE_OPTIONS, DESCRIPTION_TEMPLATES } from "./data/constants";
+import { DESCRIPTION_TEMPLATES } from "./data/constants";
+import { CALCULATORS } from "./data/calculator";
+import YAML from "yaml";
 
+// 🧱 Начальное состояние одного дня
 const initialDay = () => ({ description: "", services: ["#трансфер"] });
+  // 📡 Получение расчёта
+  const fetchEstimate = async (payloadOverride) => {
+    const payload = payloadOverride || {};
+    if (!payloadOverride) {
+      days.forEach((day, i) => {
+        payload[i + 1] = {
+          description: day.description.trim(),
+          services: day.services.filter((s) => s.trim()),
+        };
+      });
+    }
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/estimate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setDetail(data.detail || []);
+      setTotal(data.total || 0);
+    } catch (err) {
+      console.error("Ошибка запроса:", err);
+    }
+  };
+// 📦 Хук для загрузки services.yaml с бэкенда
+export function useServices() {
+  const [services, setServices] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/services.yaml`)
+      .then((res) => res.text())
+      .then((text) => {
+        try {
+          const parsed = YAML.parse(text);
+          const actual = Array.isArray(parsed) ? parsed : parsed?.services;
+          setServices(actual || []);
+        } catch (err) {
+          console.error("Ошибка парсинга services.yaml:", err);
+          setServices([]);
+        } finally {
+          setIsLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Ошибка загрузки services.yaml:", err);
+        setServices([]);
+        setIsLoading(false);
+      });
+  }, []);
+
+  return { services, isLoading };
+}
 
 export default function TourEditor() {
+  const { services, isLoading } = useServices();
   const [days, setDays] = useState([{ ...initialDay() }]);
   const [numPeople, setNumPeople] = useState(1);
   const [season, setSeason] = useState("winter");
@@ -11,53 +69,60 @@ export default function TourEditor() {
   const [detail, setDetail] = useState([]);
   const [total, setTotal] = useState(0);
 
+  useEffect(() => {
+    fetchEstimate();
+  }, [days, numPeople, season]);
+
+  if (isLoading) {
+    return <div className="text-center p-8 text-gray-500">Загрузка услуг...</div>;
+  }
+
+  // 📌 Добавить день
   const handleAddDay = () => setDays([...days, initialDay()]);
 
+  // ✏️ Изменение описания дня
   const handleDescriptionChange = (dayIndex, value) => {
     const updated = [...days];
     updated[dayIndex].description = value;
     setDays(updated);
   };
 
+  // ❌ Удалить услугу
   const handleRemoveService = (dayIndex, serviceIndex) => {
     const updated = [...days];
     updated[dayIndex].services.splice(serviceIndex, 1);
     setDays(updated);
   };
 
+  // 🔁 Изменение услуги
   const handleServiceChange = (dayIndex, serviceIndex, value) => {
     const updated = [...days];
     updated[dayIndex].services[serviceIndex] = value;
-
-    const option = SERVICE_OPTIONS.find((o) => o.key === value);
-    if (
-      option?.description &&
-      !updated[dayIndex].description.includes(option.description)
-    ) {
+    const option = services?.find((o) => o.key === value);
+    if (option?.description && !updated[dayIndex].description.includes(option.description)) {
       updated[dayIndex].description += `\n${option.description}`;
     }
-
     setDays(updated);
   };
 
+  // ➕ Добавить услугу в день
   const handleAddService = (dayIndex) => {
     const updated = [...days];
     updated[dayIndex].services.push("");
     setDays(updated);
   };
 
+  // 🧩 Вставка шаблона описания дня
   const handleTemplateInsert = (dayIndex, templateText) => {
     const updated = [...days];
     const current = updated[dayIndex].description.trim();
-    updated[dayIndex].description = current
-      ? current + "\n" + templateText
-      : templateText;
+    updated[dayIndex].description = current ? current + "\n" + templateText : templateText;
     setDays(updated);
   };
 
-
+  // 🧮 Расчёт информации по услуге
   const getServiceInfo = (svcKey) => {
-    const option = SERVICE_OPTIONS.find((o) => o.key === svcKey);
+    const option = services?.find((o) => o.key === svcKey);
     if (!option) return [];
 
     const getPrice = (item) => (season === "winter" ? item.winterPrice : item.summerPrice);
@@ -77,132 +142,87 @@ export default function TourEditor() {
           qty,
           sum,
           sumWithNDS: Math.round(sum * 1.06),
-          note: option.label
-=======
-  const fetchEstimate = async (payloadOverride) => {
-    const payload = payloadOverride || {};
-    if (!payloadOverride) {
-      days.forEach((day, i) => {
-        const dayNum = i + 1;
-        const filtered = day.services.filter((s) => s.trim());
-        payload[dayNum] = {
-          description: day.description.trim(),
-          services: filtered,
->>>>>>> 1791818c27c0910805d28c3854c9bf8d5c53ec2e
+          note: option.label,
         };
       });
     }
 
-    try {
-      const res = await fetch("/estimate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      setDetail(data.detail || []);
-      setTotal(data.total || 0);
-    } catch (err) {
-      console.error("Ошибка запроса:", err);
-    }
+    const qty = getQty(option);
+    const price = getPrice(option);
+    const sum = price * qty;
+    return [{ label: option.label, price, qty, sum, sumWithNDS: Math.round(sum * 1.06) }];
   };
 
+
+
+  // ⚙️ Генерация Markdown и расчёта
   const handleGenerate = async () => {
     const payload = {};
     days.forEach((day, i) => {
-      const dayNum = i + 1;
-      const filtered = day.services.filter((s) => s.trim());
-      payload[dayNum] = {
+      payload[i + 1] = {
         description: day.description.trim(),
-        services: filtered,
+        services: day.services.filter((s) => s.trim()),
       };
     });
 
     try {
-      const res = await fetch("/generate/markdown", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/generate/markdown`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const text = await res.text();
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${text}`);
 
-      const data = await res.json();
+      const data = JSON.parse(text);
       setResult(data.markdown || "Ошибка генерации");
       await fetchEstimate(payload);
     } catch (error) {
-      console.error("Ошибка запроса:", error);
+      console.error("Ошибка генерации:", error);
       setResult("Ошибка генерации или подключения к серверу");
     }
   };
 
-  const handleDownloadWord = async () => {
+  // 📥 Скачивание Word или Excel
+  const handleDownload = async (type) => {
     const payload = {};
     days.forEach((day, i) => {
-      const dayNum = i + 1;
-      const filtered = day.services.filter((s) => s.trim());
-      payload[dayNum] = {
+      payload[i + 1] = {
         description: day.description.trim(),
-        services: filtered,
+        services: day.services.filter((s) => s.trim()),
       };
     });
+
+    const url = type === "word" ? "/download/word" : "/download/excel";
+    const filename = type === "word" ? "itinerary.docx" : "estimate.xlsx";
+
     try {
-      const res = await fetch("/download/word", {
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept:
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            type === "word"
+              ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         },
         body: JSON.stringify(payload),
       });
+
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
+      const urlBlob = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = url;
-      link.download = "itinerary.docx";
+      link.href = urlBlob;
+      link.download = filename;
       link.click();
-      window.URL.revokeObjectURL(url);
+      URL.revokeObjectURL(urlBlob);
     } catch (err) {
-      console.error("Ошибка скачивания Word:", err);
+      console.error(`Ошибка скачивания ${type === "word" ? "Word" : "Excel"}:`, err);
     }
   };
 
-  const handleDownloadExcel = async () => {
-    const payload = {};
-    days.forEach((day, i) => {
-      const dayNum = i + 1;
-      const filtered = day.services.filter((s) => s.trim());
-      payload[dayNum] = {
-        description: day.description.trim(),
-        services: filtered,
-      };
-    });
-    try {
-      const res = await fetch("/download/excel", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept:
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        },
-        body: JSON.stringify(payload),
-      });
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "estimate.xlsx";
-      link.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Ошибка скачивания Excel:", err);
-    }
-  };
 
-  useEffect(() => {
-    fetchEstimate();
-  }, [days, numPeople, season]);
-
-  return (
+ return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-center">🛠️ Конструктор тура</h1>
 
@@ -227,10 +247,7 @@ export default function TourEditor() {
       </div>
 
       {days.map((day, dayIndex) => (
-        <div
-          key={dayIndex}
-          className="border p-4 rounded bg-white shadow space-y-4"
-        >
+        <div key={dayIndex} className="border p-4 rounded bg-white shadow space-y-4">
           <h2 className="text-lg font-semibold">День {dayIndex + 1}</h2>
           <textarea
             className="w-full p-3 border rounded text-sm"
@@ -260,7 +277,7 @@ export default function TourEditor() {
                 }
               >
                 <option value="">Выберите услугу</option>
-                {SERVICE_OPTIONS.map((opt) => (
+                {services.map((opt) => (
                   <option key={opt.key} value={opt.key}>
                     {opt.label}
                   </option>
@@ -284,37 +301,6 @@ export default function TourEditor() {
         </div>
       ))}
 
-<<<<<<< HEAD
-        <div className="flex flex-wrap gap-4">
-          <button
-            className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-            onClick={handleAddDay}
-          >
-            ➕ Добавить день
-          </button>
-
-          <button
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            onClick={handleGenerate}
-          >
-            📥 Сгенерировать Markdown и смету
-          </button>
-
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={handleDownloadExcel}
-          >
-            💾 Скачать смету (Excel)
-          </button>
-
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={handleDownloadWord}
-          >
-            💾 Скачать маршрут (Word)
-          </button>
-        </div>
-=======
       <div className="flex flex-wrap gap-4">
         <button
           className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
@@ -330,18 +316,17 @@ export default function TourEditor() {
         </button>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={handleDownloadExcel}
+          onClick={() => handleDownload("excel")}
         >
           💾 Скачать смету (Excel)
         </button>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={handleDownloadWord}
+          onClick={() => handleDownload("word")}
         >
           💾 Скачать маршрут (Word)
         </button>
       </div>
->>>>>>> 1791818c27c0910805d28c3854c9bf8d5c53ec2e
 
       {result && (
         <div className="mt-6 bg-gray-100 p-4 rounded border whitespace-pre-wrap">
