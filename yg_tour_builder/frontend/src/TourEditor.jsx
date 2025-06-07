@@ -6,30 +6,7 @@ import YAML from "yaml";
 // 🧱 Начальное состояние одного дня
 const initialDay = () => ({ description: "", services: ["#трансфер"] });
   // 📡 Получение расчёта
-  const fetchEstimate = async (payloadOverride) => {
-    const payload = payloadOverride || {};
-    if (!payloadOverride) {
-      days.forEach((day, i) => {
-        payload[i + 1] = {
-          description: day.description.trim(),
-          services: day.services.filter((s) => s.trim()),
-        };
-      });
-    }
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/estimate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      setDetail(data.detail || []);
-      setTotal(data.total || 0);
-    } catch (err) {
-      console.error("Ошибка запроса:", err);
-    }
-  };
 // 📦 Хук для загрузки services.yaml с бэкенда
 export function useServices() {
   const [services, setServices] = useState([]);
@@ -64,11 +41,51 @@ export default function TourEditor() {
   const { services, isLoading } = useServices();
   const [days, setDays] = useState([{ ...initialDay() }]);
   const [numPeople, setNumPeople] = useState(1);
-  const [season, setSeason] = useState("winter");
+  const [startDate, setStartDate] = useState("");
   const [result, setResult] = useState("");
   const [detail, setDetail] = useState([]);
   const [total, setTotal] = useState(0);
+  const [region, setRegion] = useState("baikal");
+  const [scenarioChosen, setScenarioChosen] = useState(false);
 
+
+const season = (() => {
+  if (!startDate) return "winter"; // дефолт
+  const month = new Date(startDate).getMonth() + 1;
+  return (month >= 6 && month <= 9) ? "summer" : "winter";
+})();
+
+useEffect(() => {
+  if (startDate && numPeople > 0) {
+    setScenarioChosen(true);
+  }
+}, [startDate, numPeople]);
+
+
+  const fetchEstimate = async (payloadOverride) => {
+    const payload = payloadOverride || {};
+    if (!payloadOverride) {
+      days.forEach((day, i) => {
+        payload[i + 1] = {
+          description: day.description.trim(),
+          services: day.services.filter((s) => s.trim()),
+        };
+      });
+    }
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/estimate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setDetail(data.detail || []);
+      setTotal(data.total || 0);
+    } catch (err) {
+      console.error("Ошибка запроса:", err);
+    }
+  };
   useEffect(() => {
     fetchEstimate();
   }, [days, numPeople, season]);
@@ -226,25 +243,76 @@ export default function TourEditor() {
     <div className="p-4 space-y-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-center">🛠️ Конструктор тура</h1>
 
-      <div className="flex items-center gap-6">
-        <label className="text-sm font-medium">Количество человек:</label>
+      <div className="flex flex-wrap items-center gap-6">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label className="text-sm font-medium block">Количество человек:</label>
+            <input
+              type="number"
+              className="border p-2 rounded w-full"
+              min={1}
+              value={numPeople}
+              onChange={(e) => setNumPeople(Number(e.target.value))}
+            />
+          </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium block">Дата заезда:</label>
         <input
-          type="number"
-          className="border p-2 rounded w-24"
-          min={1}
-          value={numPeople}
-          onChange={(e) => setNumPeople(Number(e.target.value))}
+          type="date"
+          className="border p-2 rounded w-full"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
         />
-        <label className="text-sm font-medium">Сезон:</label>
+      </div>
+      <div>
+        <label className="text-sm font-medium block">Сезон:</label>
+        <span className="block p-2 border rounded bg-gray-100">{season === "winter" ? "Зима" : "Лето"}</span>
+      </div>
+      <div>
+        <label className="text-sm font-medium block">Регион:</label>
         <select
-          className="border p-2 rounded"
-          value={season}
-          onChange={(e) => setSeason(e.target.value)}
+          className="border p-2 rounded w-full"
+          value={region}
+          onChange={(e) => setRegion(e.target.value)}
         >
-          <option value="winter">Зима</option>
-          <option value="summer">Лето</option>
+          <option value="baikal">Байкал</option>
+          <option value="china" disabled>Китай (скоро)</option>
+          <option value="kyrgyzstan" disabled>Киргизия (скоро)</option>
+          <option value="mongolia" disabled>Монголия (скоро)</option>
         </select>
       </div>
+    </div>
+
+    {scenarioChosen && (
+      <div className="mt-4 space-y-2">
+        <label className="text-sm font-medium block">Выберите старт:</label>
+        <div className="flex gap-4 flex-wrap">
+          <button
+            onClick={handleChooseTemplate}
+            className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            🧭 Стандартный тур
+          </button>
+          <button
+            onClick={handleChooseEmpty}
+            className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            📄 Пустой тур
+          </button>
+          <label className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 cursor-pointer">
+            📂 Загрузить из файла
+            <input
+              type="file"
+              accept=".docx,.xlsx"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+          </label>
+        </div>
+      </div>
+    )}
 
       {days.map((day, dayIndex) => (
         <div key={dayIndex} className="border p-4 rounded bg-white shadow space-y-4">
