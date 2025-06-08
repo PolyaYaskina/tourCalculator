@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { DESCRIPTION_TEMPLATES } from "./data/constants";
-import { CALCULATORS } from "./data/calculator";
 import YAML from "yaml";
+import { useTourDraft } from "./hooks/useTourDraft";
 
 // 🧱 Начальное состояние одного дня
 const initialDay = () => ({ description: "", services: ["#трансфер"] });
   // 📡 Получение расчёта
+
 
 // 📦 Хук для загрузки services.yaml с бэкенда
 export function useServices() {
@@ -48,6 +49,18 @@ export default function TourEditor() {
   const [region, setRegion] = useState("baikal");
   const [scenarioChosen, setScenarioChosen] = useState(false);
 
+useTourDraft({
+  days,
+  numPeople,
+  startDate,
+  region,
+  scenarioChosen,
+  setDays,
+  setNumPeople,
+  setStartDate,
+  setRegion,
+  setScenarioChosen
+});
 
 const season = (() => {
   if (!startDate) return "winter"; // дефолт

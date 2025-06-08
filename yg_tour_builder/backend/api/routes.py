@@ -9,13 +9,10 @@ from ..engine import parser, calculator, generator
 
 router = APIRouter()
 
-
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-
 TEMPLATES_PATH = Path(__file__).parent.parent / "data" / "templates.yaml"
-
 
 @router.post("/generate/markdown")
 async def generate_markdown(request: Request):
@@ -64,7 +61,6 @@ async def get_template(region: str = "baikal"):
         raise HTTPException(status_code=404, detail="Template not found")
     return {"days": templates[region]}
 
-
 @router.post("/itinerary/upload")
 async def upload_itinerary(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".docx"):
@@ -76,7 +72,6 @@ async def upload_itinerary(file: UploadFile = File(...)):
     days = parser.parse_word(tmp_path)
     return {"days": days}
 
-
 @router.post("/estimate")
 async def generate_estimate(request: Request):
     days = await request.json()
@@ -84,14 +79,11 @@ async def generate_estimate(request: Request):
     return estimate
 
 
-
-
 @router.post("/download/word")
 async def download_word(request: Request):
     days = await request.json()
     content = generator.create_word(days)
     return StreamingResponse(iter([content]), media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers={"Content-Disposition": "attachment; filename=itinerary.docx"})
-
 
 @router.post("/download/excel")
 async def download_excel(request: Request):
