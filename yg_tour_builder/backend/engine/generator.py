@@ -28,3 +28,5 @@ def create_excel(detail: List[Dict[str, Any]]) -> bytes:
     buffer = BytesIO()
     df.to_excel(buffer, index=False)
     return buffer.getvalue()
+
+

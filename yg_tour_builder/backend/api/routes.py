@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import yaml
 from fastapi import APIRouter,  UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.responses import FileResponse
@@ -10,8 +10,11 @@ from ..engine import parser, calculator, generator
 router = APIRouter()
 
 
-from fastapi import Request, APIRouter
+from fastapi import Request
 from fastapi.responses import JSONResponse
+
+
+TEMPLATES_PATH = Path(__file__).parent.parent / "data" / "templates.yaml"
 
 
 @router.post("/generate/markdown")
@@ -48,6 +51,18 @@ async def generate_markdown(request: Request):
     # 🔹 Возвращаем готовый markdown-текст
     return {"markdown": "\n".join(result)}
 
+def load_templates():
+    with TEMPLATES_PATH.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    return data.get("templates", {})
+
+templates = load_templates()
+
+@router.get("/template")
+async def get_template(region: str = "baikal"):
+    if region not in templates:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"days": templates[region]}
 
 
 @router.post("/itinerary/upload")
@@ -67,6 +82,8 @@ async def generate_estimate(request: Request):
     days = await request.json()
     estimate = calculator.calculate_costs(days)
     return estimate
+
+
 
 
 @router.post("/download/word")

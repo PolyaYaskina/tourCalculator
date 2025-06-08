@@ -129,6 +129,49 @@ useEffect(() => {
     setDays(updated);
   };
 
+//подгрузка шаблона
+const handleChooseTemplate = async () => {
+  try {
+    // 1. Делаем запрос на сервер
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/template`);
+
+    // 2. Парсим JSON
+    const data = await res.json();
+
+    // 3. Проверка — есть ли поле days и массив ли оно
+    if (!data || !Array.isArray(data.days)) {
+      console.error("Некорректный шаблон с сервера");
+      return;
+    }
+
+    // 4. Подстраховка: проверим, что каждый элемент — объект с нужными полями
+    const valid = data.days.every(
+      (d) =>
+        typeof d === "object" &&
+        typeof d.description === "string" &&
+        Array.isArray(d.services)
+    );
+
+    if (!valid) {
+      console.error("Шаблон содержит некорректные дни");
+      return;
+    }
+
+    // 5. Обновляем состояние дней и пересчитываем смету
+    setDays(data.days);
+    fetchEstimate();
+
+  } catch (err) {
+    // Если всё пошло по *кривому маршруту*, логируем ошибку
+    console.error("Ошибка загрузки шаблона с бэка:", err);
+  }
+};
+
+const handleChooseEmpty = () => {
+  setDays([{ ...initialDay() }]);
+  fetchEstimate();
+};
+
   // 🧩 Вставка шаблона описания дня
   const handleTemplateInsert = (dayIndex, templateText) => {
     const updated = [...days];
@@ -136,7 +179,30 @@ useEffect(() => {
     updated[dayIndex].description = current ? current + "\n" + templateText : templateText;
     setDays(updated);
   };
+const handleFileUpload = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
 
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/itinerary/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (!data || !Array.isArray(data.days)) {
+      console.error("Некорректный ответ при парсинге файла");
+      return;
+    }
+
+    setDays(data.days);
+  } catch (err) {
+    console.error("Ошибка загрузки файла:", err);
+  }
+};
   // 🧮 Расчёт информации по услуге
   const getServiceInfo = (svcKey) => {
     const option = services?.find((o) => o.key === svcKey);
