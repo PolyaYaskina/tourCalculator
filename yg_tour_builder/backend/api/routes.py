@@ -73,11 +73,14 @@ async def upload_itinerary(file: UploadFile = File(...)):
     return {"days": days}
 
 @router.post("/estimate")
-async def generate_estimate(request: Request):
+async def generate_estimate(
+    request: Request,
+    numPeople: int = 10,
+    season: str = "winter"
+):
     days = await request.json()
-    estimate = calculator.calculate_costs(days)
+    estimate = calculator.calculate_costs(days, num_people=numPeople, season=season)
     return estimate
-
 
 @router.post("/download/word")
 async def download_word(request: Request):

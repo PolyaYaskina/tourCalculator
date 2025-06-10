@@ -75,30 +75,37 @@ useEffect(() => {
 }, [startDate, numPeople]);
 
 
-  const fetchEstimate = async (payloadOverride) => {
-    const payload = payloadOverride || {};
-    if (!payloadOverride) {
-      days.forEach((day, i) => {
-        payload[i + 1] = {
-          description: day.description.trim(),
-          services: day.services.filter((s) => s.trim()),
-        };
-      });
-    }
+const fetchEstimate = async (payloadOverride) => {
+  const payload = payloadOverride || {};
+  if (!payloadOverride) {
+    days.forEach((day, i) => {
+      payload[i + 1] = {
+        description: day.description.trim(),
+        services: day.services.filter((s) => s.trim()),
+      };
+    });
+  }
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/estimate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      setDetail(data.detail || []);
-      setTotal(data.total || 0);
-    } catch (err) {
-      console.error("Ошибка запроса:", err);
-    }
-  };
+  try {
+    const query = new URLSearchParams({
+      numPeople: numPeople.toString(),
+      season,
+    });
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/estimate?${query.toString()}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    setDetail(data.detail || []);
+    setTotal(data.total || 0);
+  } catch (err) {
+    console.error("Ошибка запроса:", err);
+  }
+};
+
   useEffect(() => {
     fetchEstimate();
   }, [days, numPeople, season]);
@@ -491,7 +498,10 @@ const handleFileUpload = async (event) => {
                 <th className="border px-3 py-2">День</th>
                 <th className="border px-3 py-2">Опция</th>
                 <th className="border px-3 py-2 text-right">Цена</th>
-              </tr>
+                <th className="border px-3 py-2 text-right">Кол-во</th>
+                <th className="border px-3 py-2 text-right">Сумма</th>
+                <th className="border px-3 py-2 text-right">Сумма с НДС</th>
+                </tr>
             </thead>
             <tbody>
               {detail.map((row, i) => (
@@ -499,15 +509,17 @@ const handleFileUpload = async (event) => {
                   <td className="border px-3 py-2 text-center">{row.day}</td>
                   <td className="border px-3 py-2">{row.service}</td>
                   <td className="border px-3 py-2 text-right">{row.price}</td>
+                  <td className="border px-3 py-2 text-right">{row.qty}</td>
+                  <td className="border px-3 py-2 text-right">{row.sum}</td>
+                  <td className="border px-3 py-2 text-right">{row.sumWithNDS}</td>
                 </tr>
               ))}
               <tr className="bg-yellow-100 font-semibold">
-                <td className="border px-3 py-2 text-center" colSpan={2}>
-                  ИТОГО
-                </td>
+                <td className="border px-3 py-2 text-center" colSpan={5}>ИТОГО</td>
                 <td className="border px-3 py-2 text-right">{total}</td>
               </tr>
             </tbody>
+
           </table>
         </div>
       )}
