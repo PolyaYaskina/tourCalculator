@@ -7,7 +7,7 @@
       label: Повар
       winterPrice: 25000
       summerPrice: 25000
-      calc: fixed
+      calc: always_1
     - key: официант
       label: Официант
       winterPrice: 15000
@@ -17,7 +17,7 @@
       label: Санитарная зона
       winterPrice: 35000
       summerPrice: 10000
-      calc: always_1
+      calc: per_10_people
     - key: продукты
       label: Обед, продукты
       winterPrice: 7000
@@ -27,12 +27,12 @@
       label: машина-кухня
       winterPrice: 55000
       summerPrice: 55000
-      calc: per_person
+      calc: always_1
     - key: шатер
       label: надувной шатер
       winterPrice: 65000
       summerPrice: 65000
-      calc: per_person
+      calc: always_1
 
 - key: баня
   label: Баня с купелью
@@ -40,13 +40,13 @@
   composite: true
   winterPrice: 270000
   summerPrice: 270000
-  calc: fixed
+  calc: always_1
   components:
     - key: банщик
       label: банщик
       winterPrice: 35000
       summerPrice: 35000
-      calc: fixed
+      calc: always_1
     - key: шале
       label: доп шале
       winterPrice: 75000
@@ -58,14 +58,14 @@
   description: 🚙 Трансфер по льду на Tundra. До 3 человек в машине.
   winterPrice: 55000
   summerPrice: 55000
-  calc: onePer3
+  calc: people_div_3
 
 - key: газ69
   label: Газ 69
   description: 🚐 Атмосферная поездка на ретро-джипе ГАЗ-69.
   winterPrice: 65000
   summerPrice: 65000
-  calc: onePer3
+  calc: people_steps_10_20
 
 - key: завтрак
   label: Завтрак
