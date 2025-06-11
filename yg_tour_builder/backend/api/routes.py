@@ -90,10 +90,23 @@ async def download_word(request: Request):
 
 @router.post("/download/excel")
 async def download_excel(request: Request):
-    days = await request.json()
-    estimate = calculator.calculate_costs(days)
-    content = generator.create_excel(estimate["detail"])
-    return StreamingResponse(iter([content]), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=estimate.xlsx"})
+    try:
+        days = await request.json()
+        print("📦 Days received:", days)
+
+        estimate = calculator.calculate_costs(days)
+        print("📊 Estimate:", estimate)
+
+        content = generator.create_excel(estimate["detail"])
+        return StreamingResponse(
+            iter([content]),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=estimate.xlsx"}
+        )
+    except Exception as e:
+        print("🔥 Ошибка генерации Excel:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/services.yaml")
 async def get_services_yaml():
     path = Path(__file__).parent.parent / "data" / "services.yaml"

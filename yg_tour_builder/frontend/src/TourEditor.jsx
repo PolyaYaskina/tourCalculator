@@ -296,7 +296,7 @@ const handleFileUpload = async (event) => {
       };
     });
 
-    const url = type === "word" ? "/download/word" : "/download/excel";
+    const url = `${import.meta.env.VITE_API_URL}/download/${type}`;
     const filename = type === "word" ? "itinerary.docx" : "estimate.xlsx";
 
     try {
