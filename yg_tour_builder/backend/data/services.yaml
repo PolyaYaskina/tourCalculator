@@ -1,107 +1,109 @@
-- key: обед
-  label: Обед в шатре
+- components:
+  - calc: always_1
+    key: повар
+    label: Повар
+    summerPrice: 25000
+    winterPrice: 25000
+  - calc: per_10_people
+    key: официант
+    label: Официант
+    summerPrice: 15000
+    winterPrice: 15000
+  - calc: per_10_people
+    key: санзона
+    label: Санитарная зона
+    summerPrice: 10000
+    winterPrice: 35000
+  - calc: per_person
+    key: продукты
+    label: Обед, продукты
+    summerPrice: 7000
+    winterPrice: 7000
+  - calc: always_1
+    key: кухня
+    label: машина-кухня
+    summerPrice: 55000
+    winterPrice: 55000
+  - calc: always_1
+    key: шатер
+    label: надувной шатер
+    summerPrice: 65000
+    winterPrice: 65000
+  composite: true
   description: 🍽 Обед в тёплом шатре. Горячий чай. Кейтеринг.
-  composite: true
+  key: обед
+  label: Обед в шатре
+- calc: always_1
   components:
-    - key: повар
-      label: Повар
-      winterPrice: 25000
-      summerPrice: 25000
-      calc: always_1
-    - key: официант
-      label: Официант
-      winterPrice: 15000
-      summerPrice: 15000
-      calc: per_10_people
-    - key: санзона
-      label: Санитарная зона
-      winterPrice: 35000
-      summerPrice: 10000
-      calc: per_10_people
-    - key: продукты
-      label: Обед, продукты
-      winterPrice: 7000
-      summerPrice: 7000
-      calc: per_person
-    - key: кухня
-      label: машина-кухня
-      winterPrice: 55000
-      summerPrice: 55000
-      calc: always_1
-    - key: шатер
-      label: надувной шатер
-      winterPrice: 65000
-      summerPrice: 65000
-      calc: always_1
-
-- key: баня
-  label: Баня с купелью
+  - calc: always_1
+    key: банщик
+    label: банщик
+    summerPrice: 35000
+    winterPrice: 35000
+  - calc: people_div_2
+    key: шале
+    label: доп шале
+    summerPrice: 75000
+    winterPrice: 75000
+  composite: true
   description: 🔥 Расслабление в кедровой бане. Купель, банщик, отдых.
-  composite: true
-  winterPrice: 270000
+  key: баня
+  label: Баня с купелью
   summerPrice: 270000
-  calc: always_1
+  winterPrice: 270000
+- calc: always_1
   components:
-    - key: банщик
-      label: банщик
-      winterPrice: 35000
-      summerPrice: 35000
-      calc: always_1
-    - key: шале
-      label: доп шале
-      winterPrice: 75000
-      summerPrice: 75000
-      calc: people_div_2
-- key: Гид
-  label: Гид-организатор
-  description:
+  - calc: always_1
+    key: проживание
+    label: проживание
+    summerPrice: 5000
+    winterPrice: 10000
   composite: true
-  winterPrice: 15000
+  description: null
+  key: Гид
+  label: Гид-организатор
   summerPrice: 15000
-  calc: always_1
-  components:
-    - key: проживание
-      label: проживание
-      winterPrice: 10000
-      summerPrice: 5000
-      calc: always_1
-- key: тундра
-  label: Трансфер на Tundra
+  winterPrice: 15000
+- calc: people_div_3
   description: 🚙 Трансфер на подготовленных внедорожниках Toyota Tundra.
-  winterPrice: 55000
+  key: тундра
+  label: Трансфер на Tundra
   summerPrice: 55000
-  calc: people_div_3
-
-- key: газ69
-  label: Газ 69
+  winterPrice: 55000
+- calc: people_steps_10_20
   description: 🚐 Атмосферная поездка на ретро-джипе ГАЗ-69.
-  winterPrice: 65000
+  key: газ69
+  label: Газ 69
   summerPrice: 65000
-  calc: people_steps_10_20
-
-- key: завтрак
-  label: Завтрак
+  winterPrice: 65000
+- calc: perPerson
   description: ☕ Утренний приём пищи с горячими напитками.
-  winterPrice: 3500
+  key: завтрак
+  label: Завтрак
   summerPrice: 3500
-  calc: perPerson
-
-- key: ужин
-  label: Ужин
+  winterPrice: 3500
+- calc: perPerson
   description: 🍲 Горячий ужин, сервировка в шатре.
-  winterPrice: 1200
+  key: ужин
+  label: Ужин
   summerPrice: 1000
-  calc: perPerson
-
-- key: отель
-  label: Проживание в отеле
+  winterPrice: 1200
+- calc: perPerson
   description: Заселение в отель
-  winterPrice: 20000
+  key: отель
+  label: Проживание в отеле
   summerPrice: 20000
-  calc: perPerson
-- key: нацпарк
+  winterPrice: 20000
+- calc: perPerson
+  description: null
+  key: нацпарк
   label: нацпарк
-  description:
-  winterPrice: 300
   summerPrice: 300
-  calc: perPerson
+  winterPrice: 300
+- components: []
+  description: ''
+  key: гид
+  label: Гид
+  summerPrice: 15000
+  type: always_1
+  winterPrice: 15000

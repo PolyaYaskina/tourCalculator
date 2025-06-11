@@ -111,3 +111,20 @@ async def download_excel(request: Request):
 async def get_services_yaml():
     path = Path(__file__).parent.parent / "data" / "services.yaml"
     return FileResponse(path, media_type="application/x-yaml")
+
+@router.post("/services.yaml")
+async def save_services_yaml(request: Request):
+    try:
+        payload = await request.json()
+
+        # 💾 Путь к файлу
+        path = Path(__file__).parent.parent / "data" / "services.yaml"
+
+        # ✍️ Сохраняем YAML
+        with path.open("w", encoding="utf-8") as f:
+            yaml.dump(payload, f, allow_unicode=True)
+
+        return {"status": "ok"}
+    except Exception as e:
+        print("❌ Ошибка при сохранении services.yaml:", e)
+        raise HTTPException(status_code=400, detail=str(e))
