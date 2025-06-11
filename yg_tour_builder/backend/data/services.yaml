@@ -52,10 +52,22 @@
       winterPrice: 75000
       summerPrice: 75000
       calc: people_div_2
-
+- key: Гид
+  label: Гид-организатор
+  description:
+  composite: true
+  winterPrice: 15000
+  summerPrice: 15000
+  calc: always_1
+  components:
+    - key: проживание
+      label: проживание
+      winterPrice: 10000
+      summerPrice: 5000
+      calc: always_1
 - key: тундра
   label: Трансфер на Tundra
-  description: 🚙 Трансфер по льду на Tundra. До 3 человек в машине.
+  description: 🚙 Трансфер на подготовленных внедорожниках Toyota Tundra.
   winterPrice: 55000
   summerPrice: 55000
   calc: people_div_3
@@ -79,4 +91,17 @@
   description: 🍲 Горячий ужин, сервировка в шатре.
   winterPrice: 1200
   summerPrice: 1000
+  calc: perPerson
+
+- key: отель
+  label: Проживание в отеле
+  description: Заселение в отель
+  winterPrice: 20000
+  summerPrice: 20000
+  calc: perPerson
+- key: нацпарк
+  label: нацпарк
+  description:
+  winterPrice: 300
+  summerPrice: 300
   calc: perPerson
