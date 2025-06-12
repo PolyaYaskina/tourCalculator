@@ -1,6 +1,10 @@
+// 🧩 ServiceCard.jsx — отображает одну услугу
+import { useState } from "react";
 import CompositeEditor from "./CompositeEditor";
 
 export default function ServiceCard({ data, onChange, onDelete }) {
+  const [open, setOpen] = useState(false);
+
   const handleField = (field, value) => {
     onChange({ ...data, [field]: field.includes("price") ? Number(value) : value });
   };
@@ -34,9 +38,17 @@ export default function ServiceCard({ data, onChange, onDelete }) {
           Составная услуга
         </label>
         <input className="border p-2 flex-1" value={data.comment || ""} placeholder="Комментарий" onChange={(e) => handleField("comment", e.target.value)} />
+        {data.composite && (
+          <button
+            onClick={() => setOpen(!open)}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            {open ? "▲ Скрыть компоненты" : "▼ Показать компоненты"}
+          </button>
+        )}
       </div>
 
-      {data.composite && Array.isArray(data.components) && (
+      {data.composite && open && Array.isArray(data.components) && (
         <CompositeEditor components={data.components} onChange={handleComponentUpdate} />
       )}
 
