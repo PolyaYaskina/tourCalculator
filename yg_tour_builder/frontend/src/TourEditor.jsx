@@ -39,6 +39,16 @@ export default function TourEditor() {
     if (startDate && numPeople > 0) setScenarioChosen(true);
   }, [startDate, numPeople]);
 
+  function addToAllDays(serviceKey) {
+    setDays((prevDays) =>
+      prevDays.map((day) => ({
+        ...day,
+        services: day.services.includes(serviceKey)
+          ? day.services
+          : [...day.services, serviceKey],
+      }))
+    );
+  }
   const handleChooseTemplate = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/template`);
@@ -140,7 +150,11 @@ export default function TourEditor() {
           </div>
         </div>
       )}
-
+     <div className="flex gap-4 flex-wrap">
+    <button onClick={() => addToAllDays("гид")} className="bg-gray-100 px-3 py-1 rounded">➕ Гид</button>
+    <button onClick={() => addToAllDays("нацпарк")} className="bg-gray-100 px-3 py-1 rounded">➕ Нацпарк</button>
+    <button onClick={() => addToAllDays("тундра")} className="bg-gray-100 px-3 py-1 rounded">➕ Тундры</button>
+    </div>
       {days.map((day, i) => (
         <div key={i} className="border p-4 rounded bg-white shadow space-y-4">
           <h2 className="text-lg font-semibold">День {i + 1}</h2>

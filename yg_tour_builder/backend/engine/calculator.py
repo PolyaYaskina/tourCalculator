@@ -25,10 +25,10 @@ CALCULATORS = {
     "people_steps_10_20": people_steps_10_20,
     "fixed": fixed,
 }
-def calculate_service(service, num_people, season):
+def calculate_service(service, num_people):
     calc_fn = CALCULATORS.get(service.get("calc"), lambda _: 1)
     qty = calc_fn(num_people)
-    price = service.get(f"{season}Price", 0)
+    price = service.get("price")
     sum_ = price * qty
     return {
         "label": service.get("label"),
@@ -70,7 +70,7 @@ def calculate_costs(days, num_people=10, season="winter"):  # можно пер�
                 for comp in svc.get("components", []):
                     merged = {**comp, **next((s for s in all_services if s["key"] == comp["key"]), {})}
                     qty = CALCULATORS.get(merged.get("calc"), fixed)(num_people)
-                    price = merged.get(f"{season}Price", 0)
+                    price = merged.get("price", 0)
                     sum_ = price * qty
                     detail.append({
                         "day": int(day_num),
@@ -85,7 +85,7 @@ def calculate_costs(days, num_people=10, season="winter"):  # можно пер�
             else:
                 # обычная услуга
                 qty = CALCULATORS.get(svc.get("calc"), fixed)(num_people)
-                price = svc.get(f"{season}Price", 0)
+                price = svc.get("price", 0)
                 sum_ = price * qty
                 detail.append({
                     "day": int(day_num),

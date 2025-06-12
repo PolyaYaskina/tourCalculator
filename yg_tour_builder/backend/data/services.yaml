@@ -1,109 +1,183 @@
-- components:
-  - calc: always_1
-    key: повар
-    label: Повар
-    summerPrice: 25000
-    winterPrice: 25000
-  - calc: per_10_people
-    key: официант
-    label: Официант
-    summerPrice: 15000
-    winterPrice: 15000
-  - calc: per_10_people
-    key: санзона
-    label: Санитарная зона
-    summerPrice: 10000
-    winterPrice: 35000
-  - calc: per_person
-    key: продукты
-    label: Обед, продукты
-    summerPrice: 7000
-    winterPrice: 7000
-  - calc: always_1
-    key: кухня
-    label: машина-кухня
-    summerPrice: 55000
-    winterPrice: 55000
-  - calc: always_1
-    key: шатер
-    label: надувной шатер
-    summerPrice: 65000
-    winterPrice: 65000
-  composite: true
-  description: 🍽 Обед в тёплом шатре. Горячий чай. Кейтеринг.
-  key: обед
+- key: обед
   label: Обед в шатре
-- calc: always_1
-  components:
-  - calc: always_1
-    key: банщик
-    label: банщик
-    summerPrice: 35000
-    winterPrice: 35000
-  - calc: people_div_2
-    key: шале
-    label: доп шале
-    summerPrice: 75000
-    winterPrice: 75000
+  description: "🍽 Обед в тёплом шатре. Горячий чай. Кейтеринг."
+  category: food
   composite: true
-  description: 🔥 Расслабление в кедровой бане. Купель, банщик, отдых.
-  key: баня
+  season: summer
+  components:
+    - key: повар
+      calc: always_1
+      price: 25000
+    - key: официант
+      calc: per_10_people
+      price: 15000
+    - key: санзона
+      calc: per_10_people
+      price: 10000
+      season: summer
+    - key: продукты
+      calc: per_person
+      price: 7000
+    - key: кухня
+      calc: always_1
+      price: 55000
+    - key: шатер_малая_звезда
+      calc: always_1
+      price: 45000
+      season: summer
+    - key: шатер_большая_звезда
+      calc: always_1
+      price: 65000
+      season: summer
+    - key: шатер_мяч
+      calc: always_1
+      price: 50000
+      season: summer
+
+- key: баня
   label: Баня с купелью
-  summerPrice: 270000
-  winterPrice: 270000
-- calc: always_1
-  components:
-  - calc: always_1
-    key: проживание
-    label: проживание
-    summerPrice: 5000
-    winterPrice: 10000
+  category: active
   composite: true
-  description: null
-  key: Гид
+  components:
+    - key: банщик
+      calc: always_1
+      price: 35000
+    - key: шале
+      calc: people_div_2
+      price: 75000
+    - key: баня
+      calc: always_1
+      price: 270000
+
+- key: гид
   label: Гид-организатор
-  summerPrice: 15000
-  winterPrice: 15000
-- calc: people_div_3
-  description: 🚙 Трансфер на подготовленных внедорожниках Toyota Tundra.
-  key: тундра
-  label: Трансфер на Tundra
-  summerPrice: 55000
-  winterPrice: 55000
-- calc: people_steps_10_20
-  description: 🚐 Атмосферная поездка на ретро-джипе ГАЗ-69.
-  key: газ69
-  label: Газ 69
-  summerPrice: 65000
-  winterPrice: 65000
-- calc: perPerson
-  description: ☕ Утренний приём пищи с горячими напитками.
-  key: завтрак
-  label: Завтрак
-  summerPrice: 3500
-  winterPrice: 3500
-- calc: perPerson
-  description: 🍲 Горячий ужин, сервировка в шатре.
-  key: ужин
-  label: Ужин
-  summerPrice: 1000
-  winterPrice: 1200
-- calc: perPerson
-  description: Заселение в отель
-  key: отель
+  category: staff
+  composite: true
+  components:
+    - key: гид
+      calc: always_1
+      price: 15000
+    - key: проживание
+      calc: always_1
+      price: 10000
+
+- key: глемпинг
+  label: Глемпинг
+  category: live
+  season: summer
+  composite: true
+  components:
+    - key: палатка
+      calc: people_div_2
+      price: 15000
+    - key: санзона
+      calc: always_1
+      price: 20000
+
+- key: сапы
+  label: Сапы
+  category: active
+  season: summer
+  composite: true
+  components:
+    - key: сап
+      calc: per_person
+      price: 7000
+    - key: каяк
+      calc: per_person
+      price: 7000
+    - key: лодка
+      label: Моторная лодка сопровождения
+      calc: always_1
+      price: 30000
+
+- key: плот
+  label: Плавучий бар
+  category: active
+  season: summer
+  calc: always_1
+  price: 150000
+
+- key: катер
+  label: Трансфер на катере
+  category: transport
+  season: summer
+  calc: people_div_8
+  price: 110000
+
+- key: катер_экскурсия
+  label: Экскурсия по Малому Морю
+  category: transport
+  season: summer
+  calc: people_div_8
+  price: 80000
+
+- key: катер_турка
+  label: Переправа на Бурятскую сторону
+  category: transport
+  season: summer
+  calc: people_div_8
+  price: 100000
+
+- key: отель
   label: Проживание в отеле
-  summerPrice: 20000
-  winterPrice: 20000
-- calc: perPerson
-  description: null
-  key: нацпарк
-  label: нацпарк
-  summerPrice: 300
-  winterPrice: 300
-- components: []
-  description: ''
-  key: гид
-  label: Гид
-  summerPrice: 15000
-  type: always_1
-  winterPrice: 15000
+  calc: perPerson
+  price: 20000
+  category: live
+  comment: Редактируется вручную
+
+- key: завтрак
+  label: Завтрак
+  calc: perPerson
+  price: 3500
+  category: food
+
+- key: ужин
+  label: Ужин
+  calc: perPerson
+  price: 1000
+  category: food
+
+- key: тундра
+  label: Тундра
+  calc: people_div_3
+  price: 55000
+  category: transport
+  comment: По 3 человека
+
+- key: газ69
+  label: Газ-69
+  calc: people_steps_10_20
+  price: 65000
+  category: transport
+
+- key: нацпарк
+  label: Нацпарк
+  calc: perPerson
+  price: 300
+  category: fee
+  comment: Только вне Иркутска
+
+- key: гитарист
+  label: Гитарист
+  calc: always_1
+  price: 50000
+  category: invite
+
+- key: шоно
+  label: Ансамбль Шоно
+  calc: always_1
+  price: 80000
+  category: invite
+
+- key: мечта
+  label: Пещера Мечта
+  calc: perPerson
+  price: 3000
+  category: active
+
+- key: шаман
+  label: Вечер с шаманом
+  calc: always_1
+  price: 40000
+  category: invite
