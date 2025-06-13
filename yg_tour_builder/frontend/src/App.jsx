@@ -49,19 +49,6 @@ export default function App() {
 
   const { detail, total } = useEstimate({ days, numPeople, season });
 
-  useTourDraft({
-    days,
-    numPeople,
-    startDate,
-    region,
-    scenarioChosen,
-    setDays,
-    setNumPeople,
-    setStartDate,
-    setRegion,
-    setScenarioChosen,
-  });
-
   useEffect(() => {
     if (startDate && numPeople > 0) setScenarioChosen(true);
   }, [startDate, numPeople]);
@@ -72,6 +59,12 @@ export default function App() {
     setDays(updated);
   };
 
+  const updateDay = (modifier) => {
+  const updated = { ...selectedDay, ...modifier };
+  const copy = [...days];
+  copy[selectedDayIndex] = updated;
+  setDays(copy);
+  };
   const handleChooseTemplate = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/template`);
@@ -224,33 +217,20 @@ export default function App() {
           <DayWorkspace
               day={selectedDay}
               services={services}
-              onDescriptionChange={(desc) => {
-                const updated = { ...selectedDay, description: desc };
-                const copy = [...days];
-                copy[selectedDayIndex] = updated;
-                setDays(copy);
-              }}
+              onDescriptionChange={(desc) => updateDay({ description: desc })}
               onServiceChange={(index, newValue) => {
-                const updated = { ...selectedDay };
-                updated.services[index] = newValue;
-                const copy = [...days];
-                copy[selectedDayIndex] = updated;
-                setDays(copy);
-              }}
+                  const newServices = [...selectedDay.services];
+                  newServices[index] = newValue;
+                  updateDay({ services: newServices });
+                }}
               onAddService={() => {
-                const updated = { ...selectedDay };
-                updated.services = [...(updated.services || []), ""];
-                const copy = [...days];
-                copy[selectedDayIndex] = updated;
-                setDays(copy);
-              }}
-              onRemoveService={(indexToRemove) => {
-                const updated = { ...selectedDay };
-                updated.services = updated.services.filter((_, i) => i !== indexToRemove);
-                const copy = [...days];
-                copy[selectedDayIndex] = updated;
-                setDays(copy);
-              }}
+                  updateDay({ services: [...(selectedDay.services || []), ""] });
+                }}
+             onRemoveService={(indexToRemove) => {
+              updateDay({
+                services: selectedDay.services.filter((_, i) => i !== indexToRemove),
+              });
+            }}
             />
 
           )}
