@@ -8,31 +8,43 @@
     - key: повар
       calc: always_1
       price: 25000
+
     - key: официант
       calc: per_10_people
       price: 15000
+
     - key: санзона
       calc: per_10_people
       price: 10000
       season: summer
+
     - key: продукты
       calc: per_person
       price: 7000
+
     - key: кухня
       calc: always_1
       price: 55000
+
     - key: шатер_малая_звезда
       calc: always_1
       price: 45000
       season: summer
+
     - key: шатер_большая_звезда
       calc: always_1
       price: 65000
       season: summer
+
     - key: шатер_мяч
       calc: always_1
       price: 50000
       season: summer
+
+    - key: надувной_шатер
+      calc: always_1
+      price: 65000
+      season: winter
 
 - key: баня
   label: Баня с купелью
@@ -179,5 +191,17 @@
 - key: шаман
   label: Вечер с шаманом
   calc: always_1
-  price: 40000
+  price: 50000
   category: invite
+
+- key: ресторан
+  label: Обед в ресторане
+  calc: perPerson
+  price: 7000
+  category: food
+
+- key: команда
+  label: питание и проживание команды
+  calc: always_10
+  price: 4000
+  category: food

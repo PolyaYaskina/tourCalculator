@@ -4,6 +4,7 @@ from pathlib import Path
 import math
 SERVICES_PATH = Path(__file__).parent.parent / "data" / "services.yaml"
 def always_1(p): return 1
+def always_10(p): return 10
 def per_person(p): return p
 def per_10_people(p): return math.ceil(p / 10)
 def people_div_3(p): return math.ceil(p / 3)

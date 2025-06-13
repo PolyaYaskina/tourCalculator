@@ -1,4 +1,4 @@
-// 🧩 ServiceCard.jsx — отображает одну услугу
+// 🧩 ServiceCard.jsx — вертикальный layout редактирования услуги
 import { useState } from "react";
 import CompositeEditor from "./CompositeEditor";
 
@@ -14,30 +14,57 @@ export default function ServiceCard({ data, onChange, onDelete }) {
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
-      <div className="grid grid-cols-6 gap-4">
-        <input className="border p-2" value={data.label} placeholder="Название" onChange={(e) => handleField("label", e.target.value)} />
-        <input className="border p-2" value={data.key} placeholder="Ключ" onChange={(e) => handleField("key", e.target.value)} />
-        <input type="number" className="border p-2" value={data.price || 0} placeholder="Цена ₽" onChange={(e) => handleField("price", e.target.value)} />
-        <select className="border p-2" value={data.calc || ""} onChange={(e) => handleField("calc", e.target.value)}>
+    <div className="space-y-4">
+      {/* 📛 Основные поля */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Название</label>
+        <input className="w-full border p-2 rounded" value={data.label} placeholder="Название" onChange={(e) => handleField("label", e.target.value)} />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Ключ</label>
+        <input className="w-full border p-2 rounded" value={data.key} placeholder="Ключ" onChange={(e) => handleField("key", e.target.value)} />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Цена ₽</label>
+        <input type="number" className="w-full border p-2 rounded" value={data.price || 0} placeholder="Цена" onChange={(e) => handleField("price", e.target.value)} />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Расчёт</label>
+        <select className="w-full border p-2 rounded" value={data.calc || ""} onChange={(e) => handleField("calc", e.target.value)}>
           <option value="fixed">фикс</option>
           <option value="per_person">на человека</option>
           <option value="per_10_people">на 10 человек</option>
           <option value="people_div_2">на 2 человек</option>
           <option value="people_div_3">на 3 человек</option>
         </select>
-        <input className="border p-2" value={data.category || ""} placeholder="Категория" onChange={(e) => handleField("category", e.target.value)} />
-        <input className="border p-2" value={data.season || ""} placeholder="Сезон" onChange={(e) => handleField("season", e.target.value)} />
       </div>
 
-      <textarea className="border p-2 w-full" rows={1} value={data.description || ""} placeholder="Описание" onChange={(e) => handleField("description", e.target.value)} />
+      <div>
+        <label className="block text-sm font-medium mb-1">Категория</label>
+        <input className="w-full border p-2 rounded" value={data.category || ""} placeholder="Категория" onChange={(e) => handleField("category", e.target.value)} />
+      </div>
 
-      <div className="flex items-center gap-2">
+      <div>
+        <label className="block text-sm font-medium mb-1">Сезон</label>
+        <input className="w-full border p-2 rounded" value={data.season || ""} placeholder="Сезон" onChange={(e) => handleField("season", e.target.value)} />
+      </div>
+
+      {/* 📝 Описание */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Описание</label>
+        <textarea className="w-full border p-2 rounded" rows={2} value={data.description || ""} placeholder="Описание" onChange={(e) => handleField("description", e.target.value)} />
+      </div>
+
+      {/* ⚙️ Композит */}
+      <div className="space-y-2">
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={data.composite || false} onChange={(e) => handleField("composite", e.target.checked)} />
-          Составная услуга
+          <span className="text-sm">Составная услуга</span>
         </label>
-        <input className="border p-2 flex-1" value={data.comment || ""} placeholder="Комментарий" onChange={(e) => handleField("comment", e.target.value)} />
+        <input className="w-full border p-2 rounded" value={data.comment || ""} placeholder="Комментарий" onChange={(e) => handleField("comment", e.target.value)} />
         {data.composite && (
           <button
             onClick={() => setOpen(!open)}
@@ -46,13 +73,13 @@ export default function ServiceCard({ data, onChange, onDelete }) {
             {open ? "▲ Скрыть компоненты" : "▼ Показать компоненты"}
           </button>
         )}
+        {data.composite && open && Array.isArray(data.components) && (
+          <CompositeEditor components={data.components} onChange={handleComponentUpdate} />
+        )}
       </div>
 
-      {data.composite && open && Array.isArray(data.components) && (
-        <CompositeEditor components={data.components} onChange={handleComponentUpdate} />
-      )}
-
-      <div className="text-right mt-2">
+      {/* ❌ Удаление */}
+      <div className="text-right">
         <button onClick={onDelete} className="text-red-600 hover:text-red-800 text-sm">
           ✖ Удалить услугу
         </button>

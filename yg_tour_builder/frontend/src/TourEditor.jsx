@@ -9,6 +9,8 @@ const initialDay = () => ({ description: "", services: ["#трансфер"] });
 
 export default function TourEditor() {
   const { services, isLoading } = useServices();
+  const [title, setTitle] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [days, setDays] = useState([{ ...initialDay() }]);
   const [numPeople, setNumPeople] = useState(1);
   const [startDate, setStartDate] = useState("");
@@ -113,33 +115,76 @@ export default function TourEditor() {
 
   return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-center">🛠️ Конструктор тура</h1>
+ <h1 className="text-2xl font-bold text-center">🛠️ Конструктор тура</h1>
 
-      <div className="flex flex-wrap items-center gap-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <label className="text-sm font-medium block">Количество человек:</label>
-            <input type="number" className="border p-2 rounded w-full" min={1} value={numPeople} onChange={(e) => setNumPeople(Number(e.target.value))} />
-          </div>
-          <div>
-            <label className="text-sm font-medium block">Дата заезда:</label>
-            <input type="date" className="border p-2 rounded w-full" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-          </div>
-          <div>
-            <label className="text-sm font-medium block">Сезон:</label>
-            <span className="block p-2 border rounded bg-gray-100">{season === "winter" ? "Зима" : "Лето"}</span>
-          </div>
-          <div>
-            <label className="text-sm font-medium block">Регион:</label>
-            <select className="border p-2 rounded w-full" value={region} onChange={(e) => setRegion(e.target.value)}>
-              <option value="baikal">Байкал</option>
-              <option value="china" disabled>Китай (скоро)</option>
-              <option value="kyrgyzstan" disabled>Киргизия (скоро)</option>
-              <option value="mongolia" disabled>Монголия (скоро)</option>
-            </select>
-          </div>
-        </div>
-      </div>
+{/* Название тура */}
+<div className="mb-4">
+  <label className="text-sm font-medium block mb-1">Название тура / заказчик:</label>
+  <input
+    type="text"
+    className="text-xl border px-4 py-2 rounded w-full"
+    placeholder="Например: AGV / Байкал 20 июля"
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+  />
+</div>
+
+{/* Параметры: даты, количество, сезон, регион */}
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+  <div>
+    <label className="text-sm font-medium block">Дата начала:</label>
+    <input
+      type="date"
+      className="border p-2 rounded w-full"
+      value={startDate}
+      onChange={(e) => setStartDate(e.target.value)}
+    />
+  </div>
+  <div>
+    <label className="text-sm font-medium block">Дата окончания:</label>
+    <input
+      type="date"
+      className="border p-2 rounded w-full"
+      value={endDate}
+      onChange={(e) => setEndDate(e.target.value)}
+    />
+  </div>
+  <div>
+    <label className="text-sm font-medium block">Количество человек:</label>
+    <input
+      type="number"
+      className="border p-2 rounded w-full"
+      min={1}
+      value={numPeople}
+      onChange={(e) => setNumPeople(Number(e.target.value))}
+    />
+  </div>
+  <div>
+    <label className="text-sm font-medium block">Сезон:</label>
+    <span className="block p-2 border rounded bg-gray-100">
+      {season === "winter" ? "Зима" : "Лето"}
+    </span>
+  </div>
+</div>
+
+{/* Всего дней + регион */}
+<div className="flex flex-wrap justify-between items-end mb-4">
+  <div className="text-sm text-gray-500">Всего дней: {days.length}</div>
+  <div>
+    <label className="text-sm font-medium block">Регион:</label>
+    <select
+      className="border p-2 rounded"
+      value={region}
+      onChange={(e) => setRegion(e.target.value)}
+    >
+      <option value="baikal">Байкал</option>
+      <option value="china" disabled>Китай (скоро)</option>
+      <option value="kyrgyzstan" disabled>Киргизия (скоро)</option>
+      <option value="mongolia" disabled>Монголия (скоро)</option>
+    </select>
+  </div>
+</div>
+
 
       {scenarioChosen && (
         <div className="mt-4 space-y-2">
