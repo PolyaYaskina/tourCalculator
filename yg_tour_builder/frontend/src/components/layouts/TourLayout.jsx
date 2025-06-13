@@ -1,22 +1,48 @@
 // components/layouts/TourLayout.jsx
-import SidePanel from "../SidePanel"; // добавим позже
+import DayTree from "../DayTree";
+import SidePanel from "../ServiceEditorPanel";
 
-export default function TourLayout({ children }) {
+export default function TourLayout({
+  children,
+  days,
+  selectedDayIndex,
+  onSelectDay,
+  onAddDay,
+  onShowEstimate,
+  onOpenServiceEditor,
+  rightPanelOpen,         // 🧩 Добавить это
+  closeRightPanel
+}) {
   return (
-    <div className="grid grid-cols-[240px_1fr_360px] min-h-screen">
+    <div className="grid grid-cols-[260px_1fr] min-h-screen">
       {/* Левый сайдбар */}
-      <aside className="bg-gray-100 border-r p-4 space-y-4">
-        <h2 className="text-lg font-semibold">Навигация</h2>
-        <div className="text-sm text-gray-500">В разработке...</div>
+      <aside className="bg-gray-100 border-r p-4 space-y-4 overflow-y-auto">
+        <DayTree
+          days={days}
+          selected={selectedDayIndex}
+          onSelect={onSelectDay}
+          onAddDay={onAddDay}
+          onShowEstimate={onShowEstimate}
+        />
       </aside>
 
-      {/* Центральная часть */}
-      <main className="bg-white p-6 overflow-auto">{children}</main>
+      {/* Центральная зона */}
+      <div className="relative flex flex-col h-full">
+        {/* Кнопка "Редактор услуг" — всегда видимая */}
+        <div className="absolute top-4 right-4 z-10">
+          <button
+            onClick={onOpenServiceEditor}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            ✨ Редактор услуг
+          </button>
+        </div>
 
-      {/* Правая панель */}
-      <aside className="bg-gray-50 border-l p-4">
-        <SidePanel />
-      </aside>
+        <main className="p-6 overflow-auto flex-1 bg-white">{children}</main>
+
+        {/* Правая панель — выезжающая */}
+        <SidePanel isOpen={rightPanelOpen} onClose={closeRightPanel} />
+      </div>
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { useServices } from "./hooks/useServices";
 import { useEstimate } from "./hooks/useEstimate";
 import { buildPayload } from "./utils/payload";
 import EstimateTable from "./components/EstimateTable";
+import DayTree from "./components/DayTree";
+import DayWorkspace from "./components/DayWorkspace";
 
 const initialDay = () => ({ description: "", services: ["#трансфер"] });
 
@@ -15,6 +17,7 @@ export default function TourEditor() {
   const [numPeople, setNumPeople] = useState(1);
   const [startDate, setStartDate] = useState("");
   const [region, setRegion] = useState("baikal");
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [scenarioChosen, setScenarioChosen] = useState(false);
   const season = (() => {
     if (!startDate) return "winter";
