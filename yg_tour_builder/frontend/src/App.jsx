@@ -193,7 +193,7 @@ export default function App() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto min-h-0">
         <TourLayout
           days={days}
           selectedDayIndex={selectedDayIndex}
