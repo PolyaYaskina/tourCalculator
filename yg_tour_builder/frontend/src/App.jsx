@@ -25,7 +25,22 @@ export default function App() {
   const [scenarioChosen, setScenarioChosen] = useState(false);
 
   const selectedDay = days[selectedDayIndex];
-
+    useTourDraft({
+      days,
+      numPeople,
+      startDate,
+      endDate,
+      title,
+      region,
+      scenarioChosen,
+      setDays,
+      setNumPeople,
+      setStartDate,
+      setEndDate,
+      setTitle,
+      setRegion,
+      setScenarioChosen,
+    });
   const season = useMemo(() => {
     if (!startDate) return "winter";
     const m = new Date(startDate).getMonth() + 1;
