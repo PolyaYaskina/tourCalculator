@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import TourLayout from "./components/layouts/TourLayout";
 import DayWorkspace from "./components/DayWorkspace";
 import EstimateTable from "./components/EstimateTable";
@@ -7,11 +7,10 @@ import { useEstimate } from "./hooks/useEstimate";
 import { useTourDraft } from "./hooks/useTourDraft";
 import { buildPayload } from "./utils/payload";
 
-// 🧱 Шаблон дня
 const initialDay = () => ({ description: "", services: ["#трансфер"] });
 
 export default function App() {
-  const { services, isLoading } = useServices();
+  const { services } = useServices();
   const [days, setDays] = useState([{ ...initialDay() }]);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [showEstimate, setShowEstimate] = useState(false);
@@ -24,23 +23,29 @@ export default function App() {
   const [result, setResult] = useState("");
   const [scenarioChosen, setScenarioChosen] = useState(false);
 
-  const selectedDay = days[selectedDayIndex];
-    useTourDraft({
-      days,
-      numPeople,
-      startDate,
-      endDate,
-      title,
-      region,
-      scenarioChosen,
-      setDays,
-      setNumPeople,
-      setStartDate,
-      setEndDate,
-      setTitle,
-      setRegion,
-      setScenarioChosen,
-    });
+  const selectedDay = useMemo(
+      () => days[selectedDayIndex] ?? null,
+      [days, selectedDayIndex]
+  );
+  console.log("Selected index:", selectedDayIndex);
+  console.log("Selected day:", selectedDay);
+  useTourDraft({
+    days,
+    numPeople,
+    startDate,
+    endDate,
+    title,
+    region,
+    scenarioChosen,
+    setDays,
+    setNumPeople,
+    setStartDate,
+    setEndDate,
+    setTitle,
+    setRegion,
+    setScenarioChosen,
+  });
+
   const season = useMemo(() => {
     if (!startDate) return "winter";
     const m = new Date(startDate).getMonth() + 1;
@@ -53,18 +58,38 @@ export default function App() {
     if (startDate && numPeople > 0) setScenarioChosen(true);
   }, [startDate, numPeople]);
 
-  const updateSelectedDay = (newDay) => {
-    const updated = [...days];
-    updated[selectedDayIndex] = newDay;
-    setDays(updated);
-  };
+  const updateDay = useCallback((modifier) => {
+    const copy = [...days];
+    copy[selectedDayIndex] = { ...copy[selectedDayIndex], ...modifier };
+    setDays(copy);
+  }, [days, selectedDayIndex]);
 
-  const updateDay = (modifier) => {
-  const updated = { ...selectedDay, ...modifier };
-  const copy = [...days];
-  copy[selectedDayIndex] = updated;
-  setDays(copy);
-  };
+  const handleAddDay = useCallback(() => {
+    setDays([...days, initialDay()]);
+    setSelectedDayIndex(days.length);
+    setShowEstimate(false);
+  }, [days]);
+
+const handleRemoveDay = useCallback((index) => {
+  if (days.length === 1) return; // Нельзя удалить последний день
+
+  const updatedDays = days.filter((_, i) => i !== index);
+  setDays(updatedDays);
+
+  // Корректируем индекс выбранного дня
+  setSelectedDayIndex((prevIndex) => {
+    if (prevIndex === index) {
+      return Math.max(0, index - 1); // если удалён активный — сместить влево
+    }
+    if (prevIndex > index) {
+      return prevIndex - 1; // если правее — сдвинуть
+    }
+    return prevIndex; // если левее — не трогаем
+  });
+}, [days]);
+
+
+
   const handleChooseTemplate = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/template`);
@@ -137,39 +162,14 @@ export default function App() {
       <header className="bg-white border-b px-6 py-4">
         <h1 className="text-2xl font-bold mb-2">🛠️ Конструктор тура</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <input
-            className="border p-2 rounded"
-            placeholder="Название тура"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <input
-            type="date"
-            className="border p-2 rounded"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <input
-            type="date"
-            className="border p-2 rounded"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-          <input
-            type="number"
-            min={1}
-            className="border p-2 rounded"
-            value={numPeople}
-            onChange={(e) => setNumPeople(Number(e.target.value))}
-          />
+          <input className="border p-2 rounded" placeholder="Название тура" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input type="date" className="border p-2 rounded" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <input type="date" className="border p-2 rounded" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          <input type="number" min={1} className="border p-2 rounded" value={numPeople} onChange={(e) => setNumPeople(Number(e.target.value))} />
         </div>
         <div className="mt-2 text-sm text-gray-600">
           Сезон: <strong>{season === "winter" ? "зима" : "лето"}</strong>, Регион:
-          <select
-            className="ml-2 border p-1 rounded text-sm"
-            value={region}
-            onChange={(e) => setRegion(e.target.value)}
-          >
+          <select className="ml-2 border p-1 rounded text-sm" value={region} onChange={(e) => setRegion(e.target.value)}>
             <option value="baikal">Байкал</option>
             <option value="mongolia" disabled>Монголия (скоро)</option>
             <option value="kyrgyzstan" disabled>Киргизия (скоро)</option>
@@ -179,61 +179,53 @@ export default function App() {
       </header>
 
       <div className="flex gap-4 px-6 py-3 bg-gray-50 border-b">
-        <button onClick={handleChooseTemplate} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
-          🧭 Стандартный тур
-        </button>
-        <button onClick={handleChooseEmpty} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
-          📄 Пустой тур
-        </button>
-        <button onClick={() => addToAllDays("гид")} className="bg-gray-100 px-3 py-1 rounded">
-          ➕ Гид
-        </button>
-        <button onClick={() => addToAllDays("нацпарк")} className="bg-gray-100 px-3 py-1 rounded">
-          ➕ Нацпарк
-        </button>
+        <button onClick={handleChooseTemplate} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">🧭 Стандартный тур</button>
+        <button onClick={handleChooseEmpty} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">📄 Пустой тур</button>
+        <button onClick={() => addToAllDays("гид")} className="bg-gray-100 px-3 py-1 rounded">➕ Гид</button>
+        <button onClick={() => addToAllDays("нацпарк")} className="bg-gray-100 px-3 py-1 rounded">➕ Нацпарк</button>
       </div>
 
       <div className="flex-1 overflow-auto min-h-0">
         <TourLayout
           days={days}
           selectedDayIndex={selectedDayIndex}
-          onSelectDay={(i) => {
+           onSelectDay={(i) => {
+            console.log("CLICKED DAY", i); // 👈 сюда
             setSelectedDayIndex(i);
             setShowEstimate(false);
           }}
-          onAddDay={() => {
-            setDays([...days, initialDay()]);
-            setSelectedDayIndex(days.length);
-            setShowEstimate(false);
-          }}
+          onAddDay={handleAddDay}
+          onRemoveDay={handleRemoveDay}
           onShowEstimate={() => setShowEstimate(true)}
           onOpenServiceEditor={() => setRightPanelOpen(true)}
           rightPanelOpen={rightPanelOpen}
           closeRightPanel={() => setRightPanelOpen(false)}
         >
           {showEstimate ? (
-            <EstimateTable detail={detail} total={total} />
-          ) : (
-          <DayWorkspace
-              day={selectedDay}
-              services={services}
-              onDescriptionChange={(desc) => updateDay({ description: desc })}
-              onServiceChange={(index, newValue) => {
+              <EstimateTable detail={detail} total={total} />
+            ) : selectedDay ? (
+              <DayWorkspace
+                day={selectedDay}
+                services={services}
+                onDescriptionChange={(desc) => updateDay({ description: desc })}
+                onServiceChange={(index, newValue) => {
                   const newServices = [...selectedDay.services];
                   newServices[index] = newValue;
                   updateDay({ services: newServices });
                 }}
-              onAddService={() => {
+                onAddService={() => {
                   updateDay({ services: [...(selectedDay.services || []), ""] });
                 }}
-             onRemoveService={(indexToRemove) => {
-              updateDay({
-                services: selectedDay.services.filter((_, i) => i !== indexToRemove),
-              });
-            }}
-            />
+                onRemoveService={(indexToRemove) => {
+                  updateDay({
+                    services: selectedDay.services.filter((_, i) => i !== indexToRemove),
+                  });
+                }}
+              />
+            ) : (
+              <div className="p-6 text-gray-500">Выберите день</div>
+            )}
 
-          )}
         </TourLayout>
       </div>
 
@@ -245,22 +237,13 @@ export default function App() {
       )}
 
       <div className="flex gap-4 p-6 border-t bg-white">
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          onClick={handleGenerate}
-        >
+        <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" onClick={handleGenerate}>
           📥 Сгенерировать Markdown и смету
         </button>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => handleDownload("excel")}
-        >
+        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={() => handleDownload("excel")}>
           💾 Скачать смету (Excel)
         </button>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => handleDownload("word")}
-        >
+        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={() => handleDownload("word")}>
           💾 Скачать маршрут (Word)
         </button>
       </div>

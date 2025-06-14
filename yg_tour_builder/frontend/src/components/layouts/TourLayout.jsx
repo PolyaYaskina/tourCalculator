@@ -10,6 +10,7 @@ export default function TourLayout({
   onAddDay,
   onShowEstimate,
   onOpenServiceEditor,
+  onRemoveDay,
   rightPanelOpen,         // 🧩 Добавить это
   closeRightPanel
 }) {
@@ -23,6 +24,7 @@ export default function TourLayout({
           onSelect={onSelectDay}
           onAddDay={onAddDay}
           onShowEstimate={onShowEstimate}
+          onRemoveDay={onRemoveDay}
         />
       </aside>
 
