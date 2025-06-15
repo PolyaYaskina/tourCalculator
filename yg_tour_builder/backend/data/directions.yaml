@@ -1,0 +1,36 @@
+directions:
+  baikal:
+    label: Байкал
+    templates:
+      - name: standard_winter
+        label: Стандартный зимний тур
+        file: baikal/standard_winter.yaml
+      - name: standard_summer
+        label: Стандартный летний тур
+        file: baikal/standard_summer.yaml
+      - name: empty
+        label: Пустой тур
+        file: baikal/empty.yaml
+
+  kyrgyzstan:
+    label: Киргизия
+    templates:
+      - name: classic
+        label: Классический маршрут
+        file: kyrgyzstan/classic.yaml
+      - name: empty
+        label: Пустой тур
+        file: kyrgyzstan/empty.yaml
+
+  mongolia:
+    label: Монголия
+    templates:
+      - name: light
+        label: Вокруг Улан-Баатора
+        file: mongolia/light.yaml
+      - name: expedition
+        label: Экспедиция
+        file: mongolia/expedition.yaml
+      - name: empty
+        label: Пустой тур
+        file: mongolia/empty.yaml

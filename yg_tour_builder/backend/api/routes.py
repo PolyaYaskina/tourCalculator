@@ -12,7 +12,36 @@ router = APIRouter()
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-TEMPLATES_PATH = Path(__file__).parent.parent / "data" / "templates.yaml"
+
+TEMPLATES_DIR = Path(__file__).parent.parent / "data" / "templates"
+DIRECTIONS_PATH = Path(__file__).parent.parent / "data" / "directions.yaml"
+@router.get("/directions")
+async def get_directions():
+    try:
+        with DIRECTIONS_PATH.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        return data.get("directions", {})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка загрузки directions.yaml: {e}")
+
+@router.get("/template/file")
+async def get_template_file(file: str):
+    base_dir = Path(__file__).parent.parent / "data" / "templates"
+    full_path = (base_dir / file).resolve()
+
+    # Безопасность: не даём выйти за пределы папки templates
+    if not str(full_path).startswith(str(base_dir.resolve())):
+        raise HTTPException(status_code=403, detail="Недопустимый путь")
+
+    if not full_path.exists():
+        raise HTTPException(status_code=404, detail="Файл не найден")
+
+    try:
+        with full_path.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        return {"days": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка чтения шаблона: {e}")
 
 @router.post("/generate/markdown")
 async def generate_markdown(request: Request):
@@ -48,18 +77,6 @@ async def generate_markdown(request: Request):
     # 🔹 Возвращаем готовый markdown-текст
     return {"markdown": "\n".join(result)}
 
-def load_templates():
-    with TEMPLATES_PATH.open("r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-    return data.get("templates", {})
-
-templates = load_templates()
-
-@router.get("/template")
-async def get_template(region: str = "baikal"):
-    if region not in templates:
-        raise HTTPException(status_code=404, detail="Template not found")
-    return {"days": templates[region]}
 
 @router.post("/itinerary/upload")
 async def upload_itinerary(file: UploadFile = File(...)):

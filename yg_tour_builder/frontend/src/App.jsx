@@ -1,11 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import TourLayout from "./components/layouts/TourLayout";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Dropdown from 'react-bootstrap/Dropdown';
 import DayWorkspace from "./components/DayWorkspace";
 import EstimateTable from "./components/EstimateTable";
 import { useServices } from "./hooks/useServices";
 import { useEstimate } from "./hooks/useEstimate";
 import { useTourDraft } from "./hooks/useTourDraft";
 import { buildPayload } from "./utils/payload";
+import RegionSelector from "./components/RegionSelector";
+import { useDirections } from "./hooks/useDirections";
+import TemplateSelector from "./components/TemplateSelector";
 
 const initialDay = () => ({ description: "", services: ["#трансфер"] });
 
@@ -88,7 +93,18 @@ const handleRemoveDay = useCallback((index) => {
   });
 }, [days]);
 
-
+    const handleSelectTemplate = async (file) => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/template/file?file=${encodeURIComponent(file)}`);
+        const data = await res.json();
+        console.log("📦 Загруженный шаблон:", data);
+      if (!Array.isArray(data.days)) return;
+      const valid = data.days.every(d => typeof d.description === "string" && Array.isArray(d.services));
+      if (valid) setDays(data.days);
+    } catch (err) {
+      console.error("Ошибка загрузки шаблона:", err);
+    }
+  };
 
   const handleChooseTemplate = async () => {
     try {
@@ -168,19 +184,16 @@ const handleRemoveDay = useCallback((index) => {
           <input type="number" min={1} className="border p-2 rounded" value={numPeople} onChange={(e) => setNumPeople(Number(e.target.value))} />
         </div>
         <div className="mt-2 text-sm text-gray-600">
-          Сезон: <strong>{season === "winter" ? "зима" : "лето"}</strong>, Регион:
-          <select className="ml-2 border p-1 rounded text-sm" value={region} onChange={(e) => setRegion(e.target.value)}>
-            <option value="baikal">Байкал</option>
-            <option value="mongolia" disabled>Монголия (скоро)</option>
-            <option value="kyrgyzstan" disabled>Киргизия (скоро)</option>
-            <option value="china" disabled>Китай (скоро)</option>
-          </select>
+          Сезон: <strong>{season === "winter" ? "зима" : "лето"}</strong>,
+          <RegionSelector
+             value={region}
+             onChange={(val) => setRegion(val)}
+          />
+          <TemplateSelector region={region} onSelect={handleSelectTemplate} />
         </div>
       </header>
 
       <div className="flex gap-4 px-6 py-3 bg-gray-50 border-b">
-        <button onClick={handleChooseTemplate} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">🧭 Стандартный тур</button>
-        <button onClick={handleChooseEmpty} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">📄 Пустой тур</button>
         <button onClick={() => addToAllDays("гид")} className="bg-gray-100 px-3 py-1 rounded">➕ Гид</button>
         <button onClick={() => addToAllDays("нацпарк")} className="bg-gray-100 px-3 py-1 rounded">➕ Нацпарк</button>
       </div>
