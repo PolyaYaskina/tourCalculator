@@ -1,10 +1,15 @@
+import { useState } from "react";
+import GroupedServiceMenu from "./GroupedServiceMenu";
+import EditableServiceCard from "./EditableServiceCard";
+
 export default function DayWorkspace({
   day,
+  season,
   onDescriptionChange,
   onServiceChange,
   onAddService,
   onRemoveService,
-  services = [], // добавляем сюда
+  services = [],
 }) {
   return (
     <div className="space-y-6">
@@ -23,34 +28,61 @@ export default function DayWorkspace({
       {/* 🛠 Список услуг */}
       <div>
         <h2 className="text-lg font-semibold mb-2">📦 Услуги</h2>
-        {day.services.map((svc, i) => (
-          <div key={i} className="flex items-center gap-2 mb-2">
-            <select
-              className="w-full p-2 border rounded bg-white text-sm"
-              value={svc}
-              onChange={(e) => onServiceChange(i, e.target.value)}
-            >
-              <option value="">Выберите услугу</option>
-              {services.map((s) => (
-                <option key={typeof s === "string" ? s : s.key} value={typeof s === "string" ? s : s.key}>
-                  {typeof s === "string" ? s : s.label}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => onRemoveService(i)}
-              className="text-red-500 hover:text-red-700 text-lg font-bold"
-            >
-              ×
-            </button>
-          </div>
+
+        {day.services.map((svcObj, i) => (
+          <EditableServiceCard
+            key={i}
+            svc={svcObj}
+            season = {season}
+            servicesCatalog={services}
+            onChange={(updatedSvc) => {
+              const newServices = [...day.services];
+              newServices[i] = updatedSvc;
+              onServiceChange(i, updatedSvc);
+            }}
+            onRemove={() => onRemoveService(i)}
+          />
         ))}
-        <button
-          onClick={onAddService}
-          className="bg-gray-200 text-sm px-2 py-1 rounded hover:bg-gray-300"
-        >
-          ➕ Добавить услугу
-        </button>
+
+        <div className="mt-4">
+          <GroupedServiceMenu
+            onSelect={(item) => {
+              const isComposite = item.composite;
+              let newSvc = { key: item.key };
+
+              if (isComposite && item.components) {
+                const season = "summer";
+                const flatten = [];
+
+                item.components.forEach((comp) => {
+                  if (comp.group && Array.isArray(comp.items)) {
+                    comp.items.forEach((sub) => {
+                      if (!sub.season || sub.season === season) {
+                        flatten.push({
+                          key: sub.key,
+                          qty: 1,
+                          price: sub.price ?? 0,
+                        });
+                      }
+                    });
+                  } else {
+                    if (!comp.season || comp.season === season) {
+                      flatten.push({
+                        key: comp.key,
+                        qty: 1,
+                        price: comp.price ?? 0,
+                      });
+                    }
+                  }
+                });
+
+                newSvc.components = flatten;
+              }
+
+              onAddService(newSvc);
+            }}
+          />
+        </div>
       </div>
     </div>
   );

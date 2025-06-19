@@ -219,6 +219,7 @@ const handleRemoveDay = useCallback((index) => {
             ) : selectedDay ? (
               <DayWorkspace
                 day={selectedDay}
+                season = {season}
                 services={services}
                 onDescriptionChange={(desc) => updateDay({ description: desc })}
                 onServiceChange={(index, newValue) => {
@@ -226,8 +227,8 @@ const handleRemoveDay = useCallback((index) => {
                   newServices[index] = newValue;
                   updateDay({ services: newServices });
                 }}
-                onAddService={() => {
-                  updateDay({ services: [...(selectedDay.services || []), ""] });
+                onAddService={(key) => {
+                  updateDay({ services: [...(selectedDay.services || []), key] });
                 }}
                 onRemoveService={(indexToRemove) => {
                   updateDay({

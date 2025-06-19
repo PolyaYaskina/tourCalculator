@@ -3,7 +3,6 @@
   description: "🍽 Обед в тёплом шатре. Горячий чай. Кейтеринг."
   category: food
   composite: true
-  season: summer
   components:
     - key: повар
       calc: always_1
@@ -13,10 +12,17 @@
       calc: per_10_people
       price: 15000
 
-    - key: санзона
-      calc: per_10_people
-      price: 10000
-      season: summer
+    - group: санузел
+      choose: one
+      items:
+        - key: санзона
+          calc: per_10_people
+          price: 10000
+          season: summer
+        - key: теплый_туалет
+          calc: per_10_people
+          price: 10000
+          season: winter
 
     - key: продукты
       calc: per_person
@@ -26,25 +32,28 @@
       calc: always_1
       price: 55000
 
-    - key: шатер_малая_звезда
-      calc: always_1
-      price: 45000
-      season: summer
+    - group: шатры
+      choose: one
+      items:
+        - key: шатер_малая_звезда
+          calc: always_1
+          price: 45000
+          season: summer
 
-    - key: шатер_большая_звезда
-      calc: always_1
-      price: 65000
-      season: summer
+        - key: шатер_большая_звезда
+          calc: always_1
+          price: 65000
+          season: summer
 
-    - key: шатер_мяч
-      calc: always_1
-      price: 50000
-      season: summer
+        - key: шатер_мяч
+          calc: always_1
+          price: 50000
+          season: summer
 
-    - key: надувной_шатер
-      calc: always_1
-      price: 65000
-      season: winter
+        - key: надувной_шатер
+          calc: always_1
+          price: 65000
+          season: winter
 
 - key: баня
   label: Баня с купелью

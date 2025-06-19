@@ -145,3 +145,26 @@ async def save_services_yaml(request: Request):
     except Exception as e:
         print("❌ Ошибка при сохранении services.yaml:", e)
         raise HTTPException(status_code=400, detail=str(e))
+
+
+from ..engine.grouping import group_services_by_category
+
+@router.get("/grouped")
+def get_grouped_services():
+    try:
+        path = Path(__file__).parent.parent / "data" / "services.yaml"
+        grouped = group_services_by_category(path)
+
+        # Проверка: структура должна быть словарём
+        if not isinstance(grouped, dict):
+            raise ValueError("Функция вернула несловарный результат")
+
+        # Проверка: хотя бы одна категория должна быть с непустым списком
+        if not any(isinstance(group["items"], list) and group["items"] for group in grouped.values()):
+            raise ValueError("Все группы пусты или неправильно сформированы")
+
+        return grouped
+
+    except Exception as e:
+        print("🔥 Ошибка в get_grouped_services:", e)
+        raise HTTPException(status_code=500, detail=str(e))

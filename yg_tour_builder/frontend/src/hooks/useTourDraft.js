@@ -54,7 +54,7 @@ export function useTourDraft({
       region,
       scenarioChosen,
     });
-    console.log("💾 Сохраняем черновик:", draft);
+   // console.log("💾 Сохраняем черновик:", draft);
     localStorage.setItem("tour_draft", draft);
   }, [
     days,
