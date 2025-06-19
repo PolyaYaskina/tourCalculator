@@ -7,6 +7,7 @@ def always_1(p): return 1
 def always_10(p): return 10
 def per_person(p): return p
 def per_10_people(p): return math.ceil(p / 10)
+def people_div_8(p): return math.ceil(p / 8)
 def people_div_3(p): return math.ceil(p / 3)
 def people_div_2(p): return math.ceil(p / 2)
 def people_steps_10_20(p):
@@ -20,7 +21,9 @@ def fixed(p): return 1
 CALCULATORS = {
     "always_1": always_1,
     "per_person": per_person,
+    "perPerson": per_person,
     "per_10_people": per_10_people,
+    "people_div_8": people_div_8,
     "people_div_3": people_div_3,
     "people_div_2": people_div_2,
     "people_steps_10_20": people_steps_10_20,
