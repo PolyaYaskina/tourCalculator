@@ -33,6 +33,18 @@ async def test_estimate():
     assert len(data["detail"]) == len(expected["detail"])
 
 @pytest.mark.asyncio
+async def test_estimate_composite():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        payload = {"1": {"services": ["обед"]}}
+        resp = await ac.post("/estimate?numPeople=10&season=summer", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    expected = calculator.calculate_costs(payload, num_people=10, season="summer")
+    assert data["total"] == expected["total"]
+    assert len(data["detail"]) == len(expected["detail"])
+
+@pytest.mark.asyncio
 async def test_download_excel_and_word():
     payload = {"1": {"services": ["отель"]}}
     transport = ASGITransport(app=app)

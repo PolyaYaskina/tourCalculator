@@ -72,20 +72,60 @@ def calculate_costs(days, num_people=10, season="winter"):  # можно пер�
             if svc.get("composite"):
                 # композитная услуга — перебираем компоненты
                 for comp in svc.get("components", []):
-                    merged = {**comp, **next((s for s in all_services if s["key"] == comp["key"]), {})}
-                    qty = CALCULATORS.get(merged.get("calc"), fixed)(num_people)
-                    price = merged.get("price", 0)
-                    sum_ = price * qty
-                    detail.append({
-                        "day": int(day_num),
-                        "service": merged.get("label", merged.get("key")),
-                        "price": price,
-                        "qty": qty,
-                        "sum": sum_,
-                        "sumWithNDS": round(sum_ * 1.06),
-                        "note": svc.get("label"),
-                    })
-                    total += round(sum_ * 1.06)
+                    # Простой компонент по ключу
+                    if "key" in comp:
+                        merged = {
+                            **next((s for s in all_services if s["key"] == comp["key"]), {}),
+                            **comp,
+                        }
+                        qty = CALCULATORS.get(merged.get("calc"), fixed)(num_people)
+                        price = merged.get("price", 0)
+                        sum_ = price * qty
+                        detail.append({
+                            "day": int(day_num),
+                            "service": merged.get("label", merged.get("key")),
+                            "price": price,
+                            "qty": qty,
+                            "sum": sum_,
+                            "sumWithNDS": round(sum_ * 1.06),
+                            "note": svc.get("label"),
+                        })
+                        total += round(sum_ * 1.06)
+                        continue
+
+                    # Групповой компонент
+                    if "group" in comp:
+                        items = comp.get("items", [])
+                        choose_one = comp.get("choose") == "one"
+                        selected_items = []
+
+                        if choose_one:
+                            if items:
+                                item = next((i for i in items if i.get("season") == season), items[0])
+                                selected_items = [item]
+                        else:
+                            selected_items = [
+                                i for i in items if not i.get("season") or i.get("season") == season
+                            ]
+
+                        for item in selected_items:
+                            merged = {
+                                **next((s for s in all_services if s["key"] == item["key"]), {}),
+                                **item,
+                            }
+                            qty = CALCULATORS.get(merged.get("calc"), fixed)(num_people)
+                            price = merged.get("price", 0)
+                            sum_ = price * qty
+                            detail.append({
+                                "day": int(day_num),
+                                "service": merged.get("label", merged.get("key")),
+                                "price": price,
+                                "qty": qty,
+                                "sum": sum_,
+                                "sumWithNDS": round(sum_ * 1.06),
+                                "note": svc.get("label"),
+                            })
+                            total += round(sum_ * 1.06)
             else:
                 # обычная услуга
                 qty = CALCULATORS.get(svc.get("calc"), fixed)(num_people)
