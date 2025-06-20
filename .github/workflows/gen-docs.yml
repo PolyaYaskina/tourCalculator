@@ -3,7 +3,7 @@ name: Generate Mermaid Docs
 on:
   push:
     paths:
-      - 'yg_tour_builder/backend/app/models/**.py'
+      - 'yg_tour_builder/backend/models/**.py'
       - 'yg_tour_builder/backend/generate_mermaid.py'
       - '.github/workflows/gen-docs.yml'
   workflow_dispatch:
@@ -11,9 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: yg_tour_builder/backend
 
     steps:
       - name: 📥 Checkout repository
@@ -29,14 +26,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install pydantic
 
-      - name: 🧬 Generate Mermaid schema
-        run: |
-          python generate_mermaid.py > ../../docs/_autogen.mmd
+      - name: 📁 Ensure docs folder exists
+        run: mkdir -p docs
 
-      - name: Commit generated schema
+      - name: 🧬 Run diagram script
+        run: python yg_tour_builder/backend/generate_mermaid.py > docs/_autogen.mmd
+
+      - name: 🧷 Commit generated schema
         run: |
           git config --global user.name "Mermaid Bot"
           git config --global user.email "actions@github.com"
-          git add ../../docs/_autogen.mmd
+          git add docs/_autogen.mmd
           git commit -m "🧬 Auto-update Mermaid schema" || echo "No changes"
           git push
