@@ -72,5 +72,4 @@ node_modules/
 # Build outputs
 build/
 dist/
-#модели
-docs/
+
