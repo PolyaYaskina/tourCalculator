@@ -6,50 +6,38 @@ import DayWorkspace from "./components/DayWorkspace";
 import EstimateTable from "./components/EstimateTable";
 import { useServices } from "./hooks/useServices";
 import { useEstimate } from "./hooks/useEstimate";
-import { useTourDraft } from "./hooks/useTourDraft";
 import { buildPayload } from "./utils/payload";
 import RegionSelector from "./components/RegionSelector";
 import { useDirections } from "./hooks/useDirections";
 import TemplateSelector from "./components/TemplateSelector";
+import { useTourStore } from "./store/useTourStore";
 
 const initialDay = () => ({ description: "", services: ["#трансфер"] });
 
 export default function App() {
-  const { services } = useServices();
-  const [days, setDays] = useState([{ ...initialDay() }]);
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-  const [showEstimate, setShowEstimate] = useState(false);
-  const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [numPeople, setNumPeople] = useState(2);
-  const [title, setTitle] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [region, setRegion] = useState("baikal");
-  const [result, setResult] = useState("");
-  const [scenarioChosen, setScenarioChosen] = useState(false);
+    const {
+      title, setTitle,
+      region, setRegion,
+      startDate, setStartDate,
+      endDate, setEndDate,
+      numPeople, setNumPeople,
+      days, setDays,
+      selectedDayIndex, setSelectedDayIndex,
+      updateDay,
+      scenarioChosen, setScenarioChosen,
+    } = useTourStore();
+
+const { services } = useServices(); //
+const [showEstimate, setShowEstimate] = useState(false);
+const [rightPanelOpen, setRightPanelOpen] = useState(false);
+const [result, setResult] = useState(""); //result - генерация маркдаун перед выгрузкой
 
   const selectedDay = useMemo(
       () => days[selectedDayIndex] ?? null,
       [days, selectedDayIndex]
   );
   console.log("Selected index:", selectedDayIndex);
-  console.log("Selected day:", selectedDay);
-  useTourDraft({
-    days,
-    numPeople,
-    startDate,
-    endDate,
-    title,
-    region,
-    scenarioChosen,
-    setDays,
-    setNumPeople,
-    setStartDate,
-    setEndDate,
-    setTitle,
-    setRegion,
-    setScenarioChosen,
-  });
+
 
   const season = useMemo(() => {
     if (!startDate) return "winter";
@@ -63,17 +51,12 @@ export default function App() {
     if (startDate && numPeople > 0) setScenarioChosen(true);
   }, [startDate, numPeople]);
 
-  const updateDay = useCallback((modifier) => {
-    const copy = [...days];
-    copy[selectedDayIndex] = { ...copy[selectedDayIndex], ...modifier };
-    setDays(copy);
-  }, [days, selectedDayIndex]);
 
-  const handleAddDay = useCallback(() => {
-    setDays([...days, initialDay()]);
-    setSelectedDayIndex(days.length);
-    setShowEstimate(false);
-  }, [days]);
+    const handleAddDay = useCallback(() => {
+      setDays([...days, initialDay()]);
+      setSelectedDayIndex(days.length);
+      setShowEstimate(false);
+    }, [days, setDays, setSelectedDayIndex]);
 
 const handleRemoveDay = useCallback((index) => {
   if (days.length === 1) return; // Нельзя удалить последний день
