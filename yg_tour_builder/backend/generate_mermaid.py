@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import get_args, get_origin
 import inspect
-import models
+from yg_tour_builder.backend import models
 import sys
 from pathlib import Path
 
