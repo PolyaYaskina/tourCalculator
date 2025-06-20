@@ -1,9 +1,12 @@
 from pydantic import BaseModel
 from typing import get_args, get_origin
 import inspect
-import models  # файл, где у тебя описаны модели
+import models
 import sys
+from pathlib import Path
 
+sys.path.append(str(Path(__file__).resolve().parent / "models"))
+print("DEBUG: models =", dir(models))
 def render_model(model: BaseModel) -> str:
     lines = []
     lines.append(f"class {model.__name__} {{")
