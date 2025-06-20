@@ -6,13 +6,13 @@ from pathlib import Path
 from ..engine import parser, calculator, generator
 from ..models.TourDraft import TourDraft
 from ..engine.grouping import group_services_by_category
-
+from ..engine.template_loader import load_template_by_key
 router = APIRouter()
 
 TEMPLATES_DIR = Path(__file__).parent.parent / "data" / "templates"
 DIRECTIONS_PATH = Path(__file__).parent.parent / "data" / "directions.yaml"
 
-@router.get("/directions")
+@router.get("/directions") # загрузка направлений из ямл
 async def get_directions():
     try:
         with DIRECTIONS_PATH.open("r", encoding="utf-8") as f:
@@ -21,23 +21,11 @@ async def get_directions():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка загрузки directions.yaml: {e}")
 
-@router.get("/template/file")
-async def get_template_file(file: str):
-    base_dir = Path(__file__).parent.parent / "data" / "templates"
-    full_path = (base_dir / file).resolve()
 
-    if not str(full_path).startswith(str(base_dir.resolve())):
-        raise HTTPException(status_code=403, detail="Недопустимый путь")
+@router.get("/templates/{region}/{template_name}")
+async def get_tour_template(region: str, template_name: str):
+    return load_template_by_key(template_name=template_name, region=region)
 
-    if not full_path.exists():
-        raise HTTPException(status_code=404, detail="Файл не найден")
-
-    try:
-        with full_path.open("r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-        return {"days": data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка чтения шаблона: {e}")
 
 @router.post("/generate/markdown")
 async def generate_markdown(data: TourDraft):

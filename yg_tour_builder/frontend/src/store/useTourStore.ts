@@ -1,55 +1,73 @@
+// useTourStore.ts
 import { create } from "zustand";
+import type { ServiceInstance, TourDay, TourDraft } from "../types";
 
-type TourDay = {
-  description: string;
-  services: string[];
-};
-
-type TourState = {
-  title: string;
-  region: string;
-  numPeople: number;
-  startDate: string;
-  endDate: string;
-  days: TourDay[];
+interface DraftState extends TourDraft {
   selectedDayIndex: number;
   scenarioChosen: boolean;
+}
 
-  setTitle: (val: string) => void;
-  setRegion: (val: string) => void;
-  setNumPeople: (val: number) => void;
-  setStartDate: (val: string) => void;
-  setEndDate: (val: string) => void;
-  setScenarioChosen: (val: boolean) => void;
-
-  setDays: (days: TourDay[]) => void;
-  updateDay: (index: number, modifier: Partial<TourDay>) => void;
+interface TourStore {
+  draft: DraftState;
+  setDraft: (updates: Partial<TourDraft>) => void;
+  updateDay: (index: number, updates: Partial<TourDay>) => void;
   setSelectedDayIndex: (index: number) => void;
-};
+  setScenarioChosen: (val: boolean) => void;
+  reset: () => void;
+}
 
-export const useTourStore = create<TourState>((set) => ({
+const initialDraft: DraftState = {
   title: "",
   region: "baikal",
   numPeople: 2,
-  startDate: "",
-  endDate: "",
-  days: [{ description: "", services: ["#трансфер"] }],
+  season: "summer",
+  startDate: undefined,
+  endDate: undefined,
+  description: undefined,
+  days: [{ description: "", services: [{ key: "#трансфер" }] }],
   selectedDayIndex: 0,
   scenarioChosen: false,
+};
 
-  setTitle: (val) => set({ title: val }),
-  setRegion: (val) => set({ region: val }),
-  setNumPeople: (val) => set({ numPeople: val }),
-  setStartDate: (val) => set({ startDate: val }),
-  setEndDate: (val) => set({ endDate: val }),
-  setScenarioChosen: (val) => set({ scenarioChosen: val }),
+export const useTourStore = create<TourStore>((set) => ({
+  draft: initialDraft,
 
-  setDays: (days) => set({ days }),
-  updateDay: (index, modifier) =>
+  setDraft: (updates) =>
+    set((state) => ({
+      draft: { ...state.draft, ...updates },
+    })),
+
+  updateDay: (index, updates) =>
     set((state) => {
-      const newDays = [...state.days];
-      newDays[index] = { ...newDays[index], ...modifier };
-      return { days: newDays };
+      const days = [...state.draft.days];
+      if (index < 0 || index >= days.length) return state;
+      days[index] = { ...days[index], ...updates };
+      return {
+        draft: {
+          ...state.draft,
+          days,
+        },
+      };
     }),
-  setSelectedDayIndex: (index) => set({ selectedDayIndex: index }),
+
+  setSelectedDayIndex: (index) =>
+    set((state) => ({
+      draft: {
+        ...state.draft,
+        selectedDayIndex: index,
+      },
+    })),
+
+  setScenarioChosen: (val) =>
+    set((state) => ({
+      draft: {
+        ...state.draft,
+        scenarioChosen: val,
+      },
+    })),
+
+  reset: () =>
+    set(() => ({
+      draft: { ...initialDraft },
+    })),
 }));

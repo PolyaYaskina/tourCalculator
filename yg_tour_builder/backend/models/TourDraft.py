@@ -1,6 +1,7 @@
 from typing import Literal, Optional
 from pydantic import BaseModel
 from typing import Union
+from pydantic import field_validator
 class ServiceComponent(BaseModel):
     key: str
     calc: Literal["always_1", "per_person", "per_10_people", "per_car"]
@@ -30,3 +31,37 @@ class ServiceDefinition(BaseModel):
     season_specific: Optional[bool] = False
     composite: Optional[bool] = False
     components: Optional[list[CompositeElement]] = None
+
+# шаблоны для тура
+class ComponentInstance(BaseModel):
+    key: str
+    qty: Optional[int] = None
+    price: Optional[int] = None
+    season: Optional[Literal["summer", "winter"]] = None
+
+class ServiceInstance(BaseModel):
+    key: str  # ссылка на ServiceDefinition
+    qty: Optional[int] = None  # количество (например, машин или групп)
+    price: Optional[int] = None  # переопределение
+    season: Optional[Literal["summer", "winter"]] = None
+    components: Optional[list[ComponentInstance]] = None  # если составная — выбранные компоненты
+
+class TourDay(BaseModel):
+    description: str
+    services: list[ServiceInstance]
+
+    @field_validator("services", mode='before')
+    def parse_services(cls, v):
+        if isinstance(v, list) and all(isinstance(i, str) for i in v):
+            return [ServiceInstance(key=item) for item in v]
+        return v
+
+class TourDraft(BaseModel):
+    title: str
+    region: str
+    numPeople: int
+    season: Literal["summer", "winter"]
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
+    description: Optional[str] = None
+    days: list[TourDay]
