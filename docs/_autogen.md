@@ -1,16 +1,21 @@
 ```mermaid
 classDiagram
-  class TourDraft {
-    string title
-    string location
-    int numPeople
-    string season
-  }
-
-  class TourDay {
-    int dayNumber
-    string description
-  }
-
-  TourDraft --> TourDay
+class ServiceComponent {
+  str key
+  Literal calc
+  int price
+  Union season
+}
+class ServiceDefinition {
+  str key
+  str title
+  Union description
+  Union category
+  Union default_price
+  Union unit
+  Union tags
+  Union season_specific
+  Union composite
+  Union components
+}
 ```
