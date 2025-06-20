@@ -29,9 +29,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install pydantic
 
-      - name: 🧬 Generate Mermaid schema
-        run: |
-          python generate_mermaid.py > ../../docs/_autogen.mmd
+      - name: Run diagram script
+        run: python yg_tour_builder/backend/generate_mermaid.py > docs/_autogen.mmd
 
       - name: Commit generated schema
         run: |
