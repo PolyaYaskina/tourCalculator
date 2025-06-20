@@ -1,12 +1,16 @@
 from pydantic import BaseModel
 from typing import get_args, get_origin
 import inspect
-from yg_tour_builder.backend import models
-import sys
-from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parent / "models"))
-print("DEBUG: models =", dir(models))
+from pathlib import Path
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+import models
+
+# sys.path.append(str(Path(__file__).resolve().parent / "models"))
+# print("DEBUG: models =", dir(models))
 def render_model(model: BaseModel) -> str:
     lines = []
     lines.append(f"class {model.__name__} {{")
