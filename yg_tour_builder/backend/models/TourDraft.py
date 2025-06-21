@@ -53,6 +53,7 @@ class TourDay(BaseModel):
     @field_validator("services", mode='before')
     def parse_services(cls, v):
         if isinstance(v, list) and all(isinstance(i, str) for i in v):
+            print()
             return [ServiceInstance(key=item) for item in v]
         return v
 

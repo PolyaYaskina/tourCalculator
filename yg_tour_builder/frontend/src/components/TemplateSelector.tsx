@@ -19,27 +19,24 @@ export default function TemplateSelector({ region, onSelect }: TemplateSelectorP
     return index === -1 ? path : path.slice(index + 1);
   }
 
-  const handleSelect = async (file: string) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/templates/${region}/${getFilename(file)}`);
-      const data: TourDraft = await res.json();
-
-      // Защита от кривого бэка: проверка, что есть days
-      if (!Array.isArray(data.days)) {
-        console.warn("Неверный формат шаблона: нет days");
-        return;
-      }
-
-      // Подмешиваем недостающие поля, которые есть в DraftState
-      onSelect({
-        ...data,
-        selectedDayIndex: 0,
-        scenarioChosen: false,
-      });
-    } catch (err) {
-      console.error("Ошибка загрузки шаблона:", err);
-    }
+const handleSelect = async (file: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/templates/${region}/${getFilename(file)}`);
+  const raw = await res.json();
+ console.log("RAW:", raw)
+  const draft: Partial<TourDraft> = {
+    title: "Из шаблона",
+    region,
+    season: raw.season,
+    numPeople: 2,
+    days: Array.isArray(raw.days) ? raw.days : [], // 💥 проверка
+    startDate: undefined,
+    endDate: undefined,
+    description: undefined,
   };
+ console.log("TEMPLATE:", draft)
+  onSelect(draft); // ⬅️ вот тут и вызывается applyTemplate
+};
+
 
   const items = templates.map((t) => ({
     value: t.file,

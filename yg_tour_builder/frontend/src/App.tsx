@@ -20,6 +20,7 @@ export default function App() {
     updateDay,
     setSelectedDayIndex,
     setScenarioChosen,
+    applyTemplate
   } = useTourStore();
 
   const {
@@ -122,7 +123,7 @@ export default function App() {
         <div className="mt-2 text-sm text-gray-600">
           Сезон: <strong>{currentSeason === "winter" ? "зима" : "лето"}</strong>,
           <RegionSelector value={region} onChange={(val) => setDraft({ region: val })} />
-          <TemplateSelector region={region} onSelect={setDraft} />
+          <TemplateSelector region={region} onSelect={applyTemplate} />
         </div>
       </header>
 
@@ -132,46 +133,17 @@ export default function App() {
       </div>
 
       <div className="flex-1 overflow-auto min-h-0">
-        <TourLayout
-          days={days}
-          selectedDayIndex={selectedDayIndex}
-          onSelectDay={(i) => {
-            setSelectedDayIndex(i);
-            setShowEstimate(false);
-          }}
-          onAddDay={handleAddDay}
-          onRemoveDay={handleRemoveDay}
-          onShowEstimate={() => setShowEstimate(true)}
-          onOpenServiceEditor={() => setRightPanelOpen(true)}
+      <TourLayout
+          showEstimate={showEstimate}
+          setShowEstimate={setShowEstimate}
+          services={services}
+          detail={detail}
+          total={total}
+          currentSeason={currentSeason}
           rightPanelOpen={rightPanelOpen}
-          closeRightPanel={() => setRightPanelOpen(false)}
-        >
-          {showEstimate ? (
-            <EstimateTable detail={detail} total={total} />
-          ) : selectedDay ? (
-            <DayWorkspace
-              day={selectedDay}
-              season={currentSeason}
-              services={services}
-              onDescriptionChange={(desc) => updateDay(selectedDayIndex, { description: desc })}
-              onServiceChange={(index, newValue) => {
-                const newServices = [...selectedDay.services];
-                newServices[index] = newValue;
-                updateDay(selectedDayIndex, { services: newServices });
-              }}
-              onAddService={(key) => {
-                updateDay(selectedDayIndex, { services: [...selectedDay.services, { key }] });
-              }}
-              onRemoveService={(indexToRemove) => {
-                updateDay(selectedDayIndex, {
-                  services: selectedDay.services.filter((_, i) => i !== indexToRemove),
-                });
-              }}
-            />
-          ) : (
-            <div className="p-6 text-gray-500">Выберите день</div>
-          )}
-        </TourLayout>
+          setRightPanelOpen={setRightPanelOpen}
+        />
+
       </div>
 
       {result && (

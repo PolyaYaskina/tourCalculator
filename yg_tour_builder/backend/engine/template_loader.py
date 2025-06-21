@@ -1,8 +1,7 @@
 from fastapi import HTTPException
 from pathlib import Path
 import yaml
-from ..models import  TourDraft  # твоё определение
-from ..models.TourDraft import TourDay
+from ..models.TourDraft import TourDraft, TourDay
 from typing import Optional
 
 
@@ -19,12 +18,12 @@ def load_template_by_key(template_name: str, region: Optional[str] = None) -> To
     try:
         with yaml_path.open("r", encoding="utf-8") as f:
             raw_days = yaml.safe_load(f)
-            print("RAW DAYS:", raw_days)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка при чтении YAML: {e}")
 
     try:
         days = [TourDay(**day) for day in raw_days]
+        print("из YAML!", days)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Ошибка валидации данных: {e}")
 
