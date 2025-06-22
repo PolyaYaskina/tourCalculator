@@ -1,3 +1,13 @@
-from .TourDraft import  ServiceDefinition, ServiceComponent, ComponentGroup
+from .TourDraft import  (
+    ServiceDefinition,
+    ServiceComponent,
+    ComponentGroup,
+    ChoiceItem,
+    CompositeElement,
+    ComponentInstance,
+    ServiceInstance,
+    TourDay
+)
 
-__all__ = ["ServiceDefinition", "ServiceComponent", "ComponentGroup"]
+__all__ = ["ServiceDefinition", "ServiceComponent", "ComponentGroup", "ChoiceItem","CompositeElement", "ComponentInstance",
+           "ServiceInstance", "TourDay"]

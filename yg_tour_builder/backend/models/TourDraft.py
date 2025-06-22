@@ -2,9 +2,21 @@ from typing import Literal, Optional
 from pydantic import BaseModel
 from typing import Union
 from pydantic import field_validator
+
+CalcType = Literal[
+    "always_1",
+    "always_10",
+    "per_person",
+    "per_10",
+    "per_car",
+    "people_div_2",
+    "people_div_3",
+    "people_div_8",
+    "people_steps_10_20"
+]
 class ServiceComponent(BaseModel):
     key: str
-    calc: Literal["always_1", "per_person", "per_10_people", "per_car"]
+    calc: CalcType
     price: int
     season: Optional[Literal["summer", "winter"]] = None
 
@@ -26,11 +38,12 @@ class ServiceDefinition(BaseModel):
     description: Optional[str] = None
     category: Optional[str] = None
     default_price: Optional[int] = None  # Если услуга простая — используется эта цена
-    unit: Optional[Literal["per_person", "fixed", "per_car", "per_10_people"]] = None
+    unit: Optional[CalcType] = None
     tags: Optional[list[str]] = None
     season_specific: Optional[bool] = False
     composite: Optional[bool] = False
     components: Optional[list[CompositeElement]] = None
+    season: Optional[Literal["summer", "winter"]] = None
 
 # шаблоны для тура
 class ComponentInstance(BaseModel):

@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useTourStore } from "../store/useTourStore";
 import GroupedServiceMenu from "./GroupedServiceMenu";
 import EditableServiceCard from "./EditableServiceCard";
 
-export default function DayWorkspace({
-  day,
-  season,
-  onDescriptionChange,
-  onServiceChange,
-  onAddService,
-  onRemoveService,
-  services = [],
-}) {
+export default function DayWorkspace({ season, services = [] }) {
+  const {
+    draft: { days, selectedDayIndex },
+    addServiceToDay,
+    updateServiceInDay,
+    removeServiceFromDay,
+    updateDay,
+  } = useTourStore();
+
+  const day = days[selectedDayIndex];
+
   return (
     <div className="space-y-6">
       {/* 📄 Описание дня */}
@@ -21,7 +23,7 @@ export default function DayWorkspace({
           rows={4}
           placeholder="Описание дня..."
           value={day.description}
-          onChange={(e) => onDescriptionChange(e.target.value)}
+          onChange={(e) => updateDay(selectedDayIndex, { description: e.target.value })}
         />
       </div>
 
@@ -33,14 +35,10 @@ export default function DayWorkspace({
           <EditableServiceCard
             key={i}
             svc={svcObj}
-            season = {season}
+            season={season}
             servicesCatalog={services}
-            onChange={(updatedSvc) => {
-              const newServices = [...day.services];
-              newServices[i] = updatedSvc;
-              onServiceChange(i, updatedSvc);
-            }}
-            onRemove={() => onRemoveService(i)}
+            onChange={(updatedSvc) => updateServiceInDay(selectedDayIndex, i, updatedSvc)}
+            onRemove={() => removeServiceFromDay(selectedDayIndex, i)}
           />
         ))}
 
@@ -51,7 +49,6 @@ export default function DayWorkspace({
               let newSvc = { key: item.key };
 
               if (isComposite && item.components) {
-                const season = "summer";
                 const flatten = [];
 
                 item.components.forEach((comp) => {
@@ -79,7 +76,7 @@ export default function DayWorkspace({
                 newSvc.components = flatten;
               }
 
-              onAddService(newSvc);
+              addServiceToDay(selectedDayIndex, newSvc);
             }}
           />
         </div>

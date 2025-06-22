@@ -1,4 +1,4 @@
-// src/hooks/useTemplates.js
+// src/hooks/useTemplates.js Меню загрузки шаблона
 import { useEffect, useState } from "react";
 
 export function useTemplates(region) {

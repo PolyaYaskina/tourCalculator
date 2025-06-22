@@ -9,18 +9,18 @@
       price: 25000
 
     - key: официант
-      calc: per_10_people
+      calc: per_10
       price: 15000
 
     - group: санузел
       choose: one
       items:
         - key: санзона
-          calc: per_10_people
+          calc: per_10
           price: 10000
           season: summer
         - key: теплый_туалет
-          calc: per_10_people
+          calc: per_10
           price: 10000
           season: winter
 
@@ -142,20 +142,20 @@
 
 - key: отель
   label: Проживание в отеле
-  calc: perPerson
+  calc: per_person
   price: 20000
   category: live
   comment: Редактируется вручную
 
 - key: завтрак
   label: Завтрак
-  calc: perPerson
+  calc: per_person
   price: 3500
   category: food
 
 - key: ужин
   label: Ужин
-  calc: perPerson
+  calc: per_person
   price: 1000
   category: food
 
@@ -174,7 +174,7 @@
 
 - key: нацпарк
   label: Нацпарк
-  calc: perPerson
+  calc: per_person
   price: 300
   category: fee
   comment: Только вне Иркутска
@@ -193,7 +193,7 @@
 
 - key: мечта
   label: Пещера Мечта
-  calc: perPerson
+  calc: per_person
   price: 3000
   category: active
 
@@ -205,7 +205,7 @@
 
 - key: ресторан
   label: Обед в ресторане
-  calc: perPerson
+  calc: per_person
   price: 7000
   category: food
 
