@@ -53,7 +53,7 @@ async def upload_itinerary(file: UploadFile = File(...)):
 
 @router.post("/estimate")
 async def generate_estimate(data: TourDraft):
-    estimate = calculator.calculate_costs(data.model_dimp(), num_people=data.numPeople, season=data.season)
+    estimate = calculator.calculate_costs(data.model_dump(), num_people=data.numPeople, season=data.season)
     return estimate
 
 @router.post("/download/word")

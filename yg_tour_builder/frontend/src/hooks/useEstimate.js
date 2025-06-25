@@ -1,24 +1,21 @@
-import { useState, useEffect } from "react";
-import { buildPayload } from "../utils/payload";
+import { useEffect, useState } from "react";
+import { useTourStore } from "../store/useTourStore";
 
-export function useEstimate({ days, numPeople, season }) {
+export function useEstimate() {
+  const { draft } = useTourStore();
   const [detail, setDetail] = useState([]);
   const [total, setTotal] = useState(0);
-
+console.log("ESTIMATE", draft)
   useEffect(() => {
     const fetchEstimate = async () => {
-      const query = new URLSearchParams({
-        numPeople: numPeople.toString(),
-        season,
-      });
-
       try {
+
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/estimate?${query.toString()}`,
+          `${import.meta.env.VITE_API_URL}/estimate?numPeople=${draft.numPeople}&season=${draft.season}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(buildPayload(days)),
+            body: JSON.stringify(draft),
           }
         );
 
@@ -31,7 +28,7 @@ export function useEstimate({ days, numPeople, season }) {
     };
 
     fetchEstimate();
-  }, [days, numPeople, season]);
+  }, [draft]); // триггер на любые изменения
 
   return { detail, total };
 }

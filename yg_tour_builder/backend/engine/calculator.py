@@ -21,13 +21,11 @@ def fixed(p): return 1
 CALCULATORS = {
     "always_1": always_1,
     "per_person": per_person,
-    "perPerson": per_person,
     "per_10_people": per_10_people,
     "people_div_8": people_div_8,
     "people_div_3": people_div_3,
     "people_div_2": people_div_2,
     "people_steps_10_20": people_steps_10_20,
-    "fixed": fixed,
 }
 def calculate_service(service, num_people):
     calc_fn = CALCULATORS.get(service.get("calc"), lambda _: 1)
