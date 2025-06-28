@@ -4,6 +4,7 @@ export type ComponentInstance = {
   key: string;
   qty?: number;
   price?: number;
+ // calctype:
   season?: "summer" | "winter";
 };
 
@@ -11,6 +12,7 @@ export type ServiceInstance = {
   key: string;
   qty?: number;
   price?: number;
+//  calctype:
   season?: "summer" | "winter";
   components?: ComponentInstance[];
 };

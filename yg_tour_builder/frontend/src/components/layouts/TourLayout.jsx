@@ -3,7 +3,7 @@ import DayTree from "../DayTree.tsx";
 import SidePanel from "../ServiceEditorPanel";
 import { useTourStore } from "../../store/useTourStore";
 import DayWorkspace from "../DayWorkspace";
-import EstimateTable from "../EstimateTable"; // если он у тебя не импортирован
+import EstimateTable from "../EstimateTable.tsx"; // если он у тебя не импортирован
 
 export default function TourLayout({
   children,
@@ -18,7 +18,6 @@ export default function TourLayout({
 }) {
   const {
     draft: { days, selectedDayIndex },
-    setSelectedDayIndex,
     updateDay,
   } = useTourStore();
 
@@ -51,7 +50,7 @@ export default function TourLayout({
 
         <main className="p-6 overflow-auto flex-1 bg-white">
           {showEstimate ? (
-            <EstimateTable detail={detail} total={total} />
+            <EstimateTable />
           ) : selectedDay ? (
             <DayWorkspace
               day={selectedDay}

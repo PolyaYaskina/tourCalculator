@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { ServiceInstance, TourDay, TourDraft } from "../types";
+import type { ServiceInstance, TourDay, TourDraft } from "../types/tour";
 
 interface DraftState extends TourDraft {
   selectedDayIndex: number;
@@ -20,6 +20,10 @@ interface TourStore {
   addServiceToDay: (dayIndex: number, service: ServiceInstance) => void;
   removeServiceFromDay: (dayIndex: number, serviceIndex: number) => void;
   updateServiceInDay: (dayIndex: number, serviceIndex: number, updates: Partial<ServiceInstance>) => void;
+  showEstimate: boolean;
+  rightPanelOpen: boolean;
+  setShowEstimate: (val: boolean) => void;
+  setRightPanelOpen: (val: boolean) => void;
 }
 
 const generateEmptyDay = (): TourDay => ({
@@ -40,10 +44,19 @@ const initialDraft: DraftState = {
   scenarioChosen: false,
 };
 
+
+
 export const useTourStore = create<TourStore>()(
   persist(
     (set, get) => ({
       draft: initialDraft,
+      showEstimate: false,
+      rightPanelOpen: false,
+
+      setShowEstimate: (val) =>
+        set(() => ({ showEstimate: val })),
+      setRightPanelOpen: (val) =>
+        set(() => ({ rightPanelOpen: val })),
 
       setDraft: (updates) =>
         set((state) => ({
@@ -147,7 +160,11 @@ export const useTourStore = create<TourStore>()(
     }),
     {
       name: "tour-storage", // ключ в localStorage
-      partialize: (state) => ({ draft: state.draft }), // сохраняем только draft
+      partialize: (state) => ({
+        draft: state.draft,
+        showEstimate: state.showEstimate,
+        rightPanelOpen: state.rightPanelOpen,
+    }),
     }
   )
 );

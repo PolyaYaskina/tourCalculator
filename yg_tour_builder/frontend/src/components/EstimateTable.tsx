@@ -6,8 +6,9 @@ const NDS_RATE = 0.06;
 
 export default function EstimateTable() {
   const {
-    draft: { days },
+    draft: { days, numPeople },
   } = useTourStore();
+
 
   if (!Array.isArray(days) || days.length === 0) return null;
 
@@ -16,7 +17,7 @@ export default function EstimateTable() {
 
     return day.services.map((service) => {
       const price = service.price ?? 0;
-      const qty = service.qty ?? 1;
+       const qty = service.qty ?? numPeople ?? 1;
       const sum = price * qty;
       const sumWithNDS = sum * (1 + NDS_RATE);
 
